@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserRole } from "../dto/user-role.enum";
 
 @Entity()
 export class User {
@@ -15,8 +16,11 @@ export class User {
   studentId: string;
 
   @Column({ nullable: false, name: "role" })
-  role: string;
+  role: string = UserRole.STUDENT;
 
   @Column({ nullable: false, name: "password" })
   password: string;
+
+  @Column({ nullable: true, name: "create_date" })
+  createDate: Date = new Date();
 }

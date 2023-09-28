@@ -8,6 +8,7 @@ import { CourseExerciseModule } from "./course-exercise/course-exercise.module";
 import { StudentExerciseModule } from "./student-exercise/student-exercise.module";
 import { CourseExercise } from "./course-exercise/entities/course-exercise.entity";
 import { StudentExercise } from "./student-exercise/entities/student-exercise.entity";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { StudentExercise } from "./student-exercise/entities/student-exercise.en
     }),
     UserModule,
     CourseExerciseModule,
-    StudentExerciseModule
+    StudentExerciseModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService]
