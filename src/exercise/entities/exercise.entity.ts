@@ -1,6 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
-import { Course } from "../../course/entities/course.entity";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "exercise" })
 export class Exercise {

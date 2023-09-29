@@ -7,7 +7,7 @@ export class Course {
   @PrimaryGeneratedColumn({ name: "course_id" })
   courseId: number;
 
-  @Column({ name: "course_name", nullable: false}) //unique
+  @Column({ name: "course_name", nullable: false }) //unique
   courseName: string;
 
   @Column({ name: "course_year", nullable: false }) //unique
@@ -30,7 +30,6 @@ export class Course {
 
   @Column({ name: "course_create_date", nullable: false })
   courseCreateDate: Date = new Date();
-
 
 
 }

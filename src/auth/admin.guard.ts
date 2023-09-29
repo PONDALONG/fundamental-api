@@ -3,9 +3,10 @@ import { JwtService } from "@nestjs/jwt";
 import { jwtConstants } from "./auth.constants";
 import { Request } from "express";
 import { UserService } from "../user/user.service";
+import { UserRole } from "../user/dto/user-role.enum";
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private readonly userService: UserService
@@ -27,6 +28,7 @@ export class AuthGuard implements CanActivate {
       );
       const user = await this.userService.findOne(payload["userId"]);
       if (!user) throw new UnauthorizedException();
+      if (user.role !== UserRole.TEACHER) throw new UnauthorizedException();
 
       delete user.password;
 

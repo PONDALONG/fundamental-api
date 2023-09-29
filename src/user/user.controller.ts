@@ -17,9 +17,16 @@ import { LoginRequestDto } from "./dto/login-request.dto";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
+import { MyLogger } from "../ีutils/MyLogger";
+import { Res } from "../ีutils/Res";
+import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
 export class UserController {
+  private readonly logger = new MyLogger(UserController.name);
+  private readonly response = new Res();
+  private readonly transaction: string = new Date().getTime().toString();
+
   constructor(
     private readonly service: UserService
   ) {
@@ -39,23 +46,49 @@ export class UserController {
   @Post("imports")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
+  @UseGuards(AdminGuard)
+  async imports(@UploadedFile() file: Express.Multer.File, @Request() auth: any) {
 
-  async imports(@UploadedFile() file: Express.Multer.File) {
+    const user: User = auth.user as User;
+    this.logger.logStart(this.transaction, this.imports.name, user.studentId, user.role);
+    this.logger.logInfo(this.transaction, user.studentId, user.role, file.originalname);
+
     try {
+
       await this.service.imports(file);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
+
+      return this.response.ok();
+
+    } catch (e) {
+      throw e;
+
+    } finally {
+
+      this.logger.logEnd(this.transaction, this.imports.name, user.studentId, user.role);
+
     }
   }
 
   @UseGuards(AuthGuard)
   @Get("profile")
   @HttpCode(HttpStatus.OK)
-  async profile(@Request() req: any) {
+  async profile(@Request() auth: any) {
+
+    const user: User = auth.user as User;
+    this.logger.logStart(this.transaction, this.profile.name, user.studentId, user.role);
+    this.logger.logInfo(this.transaction, user.studentId, user.role);
+
     try {
-      return await this.service.checkUser(req.user as User);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
+      
+      return user;
+
+    } catch (e) {
+      throw e;
+
+    } finally {
+
+      this.logger.logEnd(this.transaction, this.profile.name, user.studentId, user.role);
+
     }
   }
 

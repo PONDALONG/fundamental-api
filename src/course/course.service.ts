@@ -3,9 +3,12 @@ import { Repository } from "typeorm";
 import { Course } from "./entities/course.entity";
 import { CourseCreateRequestDto } from "./dto/course-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { MyLogger } from "../ีutils/MyLogger";
 
 @Injectable()
 export class CourseService {
+  private readonly logger = new MyLogger(CourseService.name);
+
   constructor(
     @InjectRepository(Course)
     private readonly repository: Repository<Course>
@@ -24,8 +27,8 @@ export class CourseService {
 
       const save = await this.repository.save(course);
       if (!save) throw new BadRequestException("save error");
-    } catch (error) {
-      throw error;
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -40,8 +43,8 @@ export class CourseService {
         }
       });
       if (course) throw new BadRequestException("course duplicate");
-    } catch (error) {
-      throw error;
+    } catch (e) {
+      throw e;
     }
   }
 }

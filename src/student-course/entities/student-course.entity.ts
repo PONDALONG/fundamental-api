@@ -1,5 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../../user/entities/user.entity";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "std_course" })
 export class StudentCourse {
@@ -21,7 +20,6 @@ export class StudentCourse {
 
   @Column({ name: "std_course_status" })
   stdCourseStatus: string;
-
 
 
 }

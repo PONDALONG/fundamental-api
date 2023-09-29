@@ -48,9 +48,9 @@ export class UserService {
         throw new HttpException("no data", this.BAD_REQUEST);
       }
 
-    } catch (error) {
-      console.error("imports error : " + error.message);
-      throw new HttpException(error.message, error.status | HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (e) {
+      console.error("imports error : " + e.message);
+      throw new HttpException(e.message, e.status | HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -83,9 +83,9 @@ export class UserService {
       } else {
         throw new HttpException("user not found", this.BAD_REQUEST);
       }
-    } catch (error) {
-      console.error("login error : " + error.message);
-      throw new HttpException(error.message, error.status);
+    } catch (e) {
+      console.error("login error : " + e.message);
+      throw new HttpException(e.message, e.status);
     }
   }
 
