@@ -1,8 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { loginRequestDto } from "./dto/login-request.dto";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
+} from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { loginRequestDto } from "./dto/login-request.dto";
+import { UserService } from "./user.service";
+import { AuthGuard } from "../auth/auth.guard";
+import { User } from "./entities/user.entity";
 
 @Controller("user")
 export class UserController {
@@ -12,33 +26,46 @@ export class UserController {
   }
 
   @Post("login")
-  login(@Body() req: loginRequestDto) {
-    return this.service.login(req);
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() req: loginRequestDto) {
+    try {
+      return await this.service.login(req);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+
   }
 
   @Post("imports")
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
+
   async imports(@UploadedFile() file: Express.Multer.File) {
-    await this.service.imports(file);
+    try {
+      await this.service.imports(file);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.service.findAll();
+  @UseGuards(AuthGuard)
+  @Get("profile")
+  @HttpCode(HttpStatus.OK)
+  async profile(@Request() req: any) {
+    try {
+      return await this.service.checkUser(req.user as User);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.service.findOne(+id);
-  }
-
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.service.update(+id, updateUserDto);
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.service.remove(+id);
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param("id") id: number) {
+    try {
+      return await this.service.findOne(id);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 }

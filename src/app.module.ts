@@ -4,11 +4,12 @@ import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserModule } from "./user/user.module";
 import { User } from "./user/entities/user.entity";
-import { CourseExerciseModule } from "./course-exercise/course-exercise.module";
 import { StudentExerciseModule } from "./student-exercise/student-exercise.module";
-import { CourseExercise } from "./course-exercise/entities/course-exercise.entity";
 import { StudentExercise } from "./student-exercise/entities/student-exercise.entity";
 import { AuthModule } from "./auth/auth.module";
+import { CourseModule } from "./course/course.module";
+import { StudentCourseModule } from "./student-course/student-course.module";
+import { ExerciseModule } from "./exercise/exercise.module";
 
 @Module({
   imports: [
@@ -19,13 +20,15 @@ import { AuthModule } from "./auth/auth.module";
       username: "root",
       password: "root",
       database: "fundamental_db",
-      entities: [User, CourseExercise, StudentExercise],
+      entities: [User, StudentExercise],
       synchronize: true
     }),
     UserModule,
-    CourseExerciseModule,
     StudentExerciseModule,
-    AuthModule
+    AuthModule,
+    CourseModule,
+    StudentCourseModule,
+    ExerciseModule
   ],
   controllers: [AppController],
   providers: [AppService]

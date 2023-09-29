@@ -8,11 +8,16 @@ export class AuthService {
     private jwtService: JwtService
   ) {
   }
-  async signIn(user:User) {
 
-    const payload = {userId:user.userId,studentId:user.studentId,role:user.role};
-    return {
-      access_token: await this.jwtService.signAsync(payload)
+  async tokenize(user: User) {
+    const payload = {
+      userId: user.userId,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      studentId: user.studentId,
+      role: user.role,
+      createDate: user.createDate
     };
+    return await this.jwtService.signAsync(payload);
   }
 }

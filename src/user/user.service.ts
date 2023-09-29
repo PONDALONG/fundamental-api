@@ -1,13 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { Repository } from "typeorm";
-import { User } from "./entities/user.entity";
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { loginRequestDto } from "./dto/login-request.dto";
-import { AuthService } from "../auth/auth.service";
-import { Readable } from "stream";
+import * as bcrypt from "bcrypt";
 import * as csv from "csv-parser";
+import { Readable } from "stream";
+import { Repository } from "typeorm";
+import { AuthService } from "../auth/auth.service";
+import { loginRequestDto } from "./dto/login-request.dto";
+import { User } from "./entities/user.entity";
+import { UserRole } from "./dto/user-role.enum";
 
 @Injectable()
 export class UserService {
@@ -16,12 +16,12 @@ export class UserService {
     private readonly repository: Repository<User>,
     private readonly authService: AuthService
   ) {
-
+    this.createAdmin().then();
   }
 
-  create(createUserDto: CreateUserDto) {
-    return "This action adds a new user";
-  }
+  private readonly salt = bcrypt.genSaltSync(10);
+
+  private readonly BAD_REQUEST = HttpStatus.BAD_REQUEST;
 
   async imports(file: Express.Multer.File) {
 
@@ -42,11 +42,16 @@ export class UserService {
       });
 
       results = (results as User[]).filter((user: User) => !arr.includes(user.studentId));
-      if ((results as User[]).length > 0)
-        await this.repository.save(results);
+      if ((results as User[]).length > 0) {
+        const save = await this.repository.save(results);
+        if (!save) throw new HttpException("save error", this.BAD_REQUEST);
+      } else {
+        throw new HttpException("no data", this.BAD_REQUEST);
+      }
 
     } catch (error) {
-      console.log(error.message);
+      console.error("imports error : " + error.message);
+      throw new HttpException(error.message, error.status | HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -58,39 +63,91 @@ export class UserService {
     const users = await this.repository.createQueryBuilder("user").select(["user.studentId"]).getMany();
     const studentId: string[] = [];
 
-    for (let user of users) studentId.push(user.studentId);
+    for (let user of users) {
+      studentId.push(user.studentId);
+    }
 
     return studentId;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
-
   async login(req: loginRequestDto) {
-    let user = await this.repository.findOne({ where: { studentId: req.studentId, password: req.password } });
-    if (user) {
-      return this.authService.signIn(user);
-    } else {
-      return "invalid username or password";
+    try {
+      const user = await this.repository.findOne({ where: { studentId: req.studentId } });
+
+      if (user) {
+        if (await this.compare(req.password, user.password)) {
+          const token = await this.authService.tokenize(user);
+          return { "access_token": token };
+        } else {
+          throw new HttpException("password incorrect", this.BAD_REQUEST);
+        }
+      } else {
+        throw new HttpException("user not found", this.BAD_REQUEST);
+      }
+    } catch (error) {
+      console.error("login error : " + error.message);
+      throw new HttpException(error.message, error.status);
     }
   }
 
-
-  mapUserToImports(data: User): User {
-    let user = new User();
-    user.firstname = data.firstname;
-    user.lastname = data.lastname;
-    user.studentId = data.studentId;
-    user.password = data.studentId;
+  private mapUserToImports(data: User): User {
+    const user = new User();
+    user.firstname = data.firstname.trim();
+    user.lastname = data.lastname.trim();
+    user.studentId = data.studentId.trim();
+    user.password = this.encode(data.studentId.trim() + "Ab*");
     return user;
+  }
+
+  async createAdmin() {
+    try {
+      let check = await this.findAdmin();
+      if (check) return;
+      const user = new User();
+      user.firstname = "admin";
+      user.lastname = "admin";
+      user.studentId = "admin";
+      user.password = this.encode("admin" + "Ab*");
+      user.role = UserRole.TEACHER;
+      await this.repository.save(user);
+    } catch (e) {
+      console.error("createAdmin error : " + e.message);
+    }
+
+  }
+
+  async checkUser(user: User) {
+    user = await this.repository.createQueryBuilder("user")
+      .select([
+        "user.userId",
+        "user.firstname",
+        "user.lastname",
+        "user.studentId",
+        "user.role",
+        "user.createDate"
+      ]).where(
+        "user.userId = :userId AND user.studentId = :studentId", user
+      )
+      .getOne();
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
+  }
+
+  async findAdmin() {
+    return await this.repository.findOne({ where: { studentId: "admin" } });
+  }
+
+  encode(pwd: string) {
+    return bcrypt.hashSync(pwd, this.salt);
+  }
+
+  async compare(pwd: string, hash: string) {
+    return await bcrypt.compare(pwd, hash);
+  }
+
+  async findOne(id: number) {
+    return await this.repository.findOne({ where: { userId: id } });
   }
 }

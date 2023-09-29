@@ -1,1 +1,2 @@
-export class StudentExercise {}
+export class StudentExercise {
+}

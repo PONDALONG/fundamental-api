@@ -3,7 +3,7 @@ import { UserRole } from "../dto/user-role.enum";
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn("uuid", { name: "user_id" })
+  @PrimaryGeneratedColumn({ name: "user_id" })
   userId: number;
 
   @Column({ nullable: false, name: "firstname" })
@@ -23,4 +23,8 @@ export class User {
 
   @Column({ nullable: true, name: "create_date" })
   createDate: Date = new Date();
+
+  @Column({ nullable: true, name: "class" })
+  class: string;
+
 }
