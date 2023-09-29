@@ -10,6 +10,9 @@ import { AuthModule } from "./auth/auth.module";
 import { CourseModule } from "./course/course.module";
 import { StudentCourseModule } from "./student-course/student-course.module";
 import { ExerciseModule } from "./exercise/exercise.module";
+import { StudentCourse } from "./student-course/entities/student-course.entity";
+import { Exercise } from "./exercise/entities/exercise.entity";
+import { Course } from "./course/entities/course.entity";
 
 @Module({
   imports: [
@@ -20,7 +23,7 @@ import { ExerciseModule } from "./exercise/exercise.module";
       username: "root",
       password: "root",
       database: "fundamental_db",
-      entities: [User, StudentExercise],
+      entities: [User, StudentCourse, Exercise, Course, StudentExercise],
       synchronize: true
     }),
     UserModule,

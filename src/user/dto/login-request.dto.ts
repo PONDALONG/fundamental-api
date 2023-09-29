@@ -1,4 +1,4 @@
-export class loginRequestDto {
+export class LoginRequestDto {
   studentId: string;
   password: string;
 }

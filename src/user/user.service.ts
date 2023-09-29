@@ -5,12 +5,15 @@ import * as csv from "csv-parser";
 import { Readable } from "stream";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
-import { loginRequestDto } from "./dto/login-request.dto";
+import { LoginRequestDto } from "./dto/login-request.dto";
 import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
 
 @Injectable()
 export class UserService {
+  private readonly salt = bcrypt.genSaltSync(10);
+  private readonly BAD_REQUEST = HttpStatus.BAD_REQUEST;
+
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
@@ -18,10 +21,6 @@ export class UserService {
   ) {
     this.createAdmin().then();
   }
-
-  private readonly salt = bcrypt.genSaltSync(10);
-
-  private readonly BAD_REQUEST = HttpStatus.BAD_REQUEST;
 
   async imports(file: Express.Multer.File) {
 
@@ -70,7 +69,7 @@ export class UserService {
     return studentId;
   }
 
-  async login(req: loginRequestDto) {
+  async login(req: LoginRequestDto) {
     try {
       const user = await this.repository.findOne({ where: { studentId: req.studentId } });
 
@@ -88,15 +87,6 @@ export class UserService {
       console.error("login error : " + error.message);
       throw new HttpException(error.message, error.status);
     }
-  }
-
-  private mapUserToImports(data: User): User {
-    const user = new User();
-    user.firstname = data.firstname.trim();
-    user.lastname = data.lastname.trim();
-    user.studentId = data.studentId.trim();
-    user.password = this.encode(data.studentId.trim() + "Ab*");
-    return user;
   }
 
   async createAdmin() {
@@ -149,5 +139,14 @@ export class UserService {
 
   async findOne(id: number) {
     return await this.repository.findOne({ where: { userId: id } });
+  }
+
+  private mapUserToImports(data: User): User {
+    const user = new User();
+    user.firstname = data.firstname.trim();
+    user.lastname = data.lastname.trim();
+    user.studentId = data.studentId.trim();
+    user.password = this.encode(data.studentId.trim() + "Ab*");
+    return user;
   }
 }

@@ -13,7 +13,7 @@ import {
   UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { loginRequestDto } from "./dto/login-request.dto";
+import { LoginRequestDto } from "./dto/login-request.dto";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
@@ -27,7 +27,7 @@ export class UserController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  async login(@Body() req: loginRequestDto) {
+  async login(@Body() req: LoginRequestDto) {
     try {
       return await this.service.login(req);
     } catch (error) {

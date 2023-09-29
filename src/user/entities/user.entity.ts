@@ -26,5 +26,4 @@ export class User {
 
   @Column({ nullable: true, name: "class" })
   class: string;
-
 }
