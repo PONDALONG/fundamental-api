@@ -18,7 +18,7 @@ import { AppController } from "./app.controller";
 import { AuthService } from "./auth/auth.service";
 import { JwtService } from "@nestjs/jwt";
 
-export const BaseBaseEntity = [
+export const BaseEntity = [
   User,
   StudentCourse,
   Exercise,
