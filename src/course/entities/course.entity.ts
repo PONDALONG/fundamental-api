@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CourseStatus } from "../dto/course-status.enum";
 import { Exercise } from "../../exercise/entities/exercise.entity";
 import { StudentCourse } from "../../student-course/entities/student-course.entity";

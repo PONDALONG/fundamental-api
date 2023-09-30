@@ -1,6 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Exercise } from "../../exercise/entities/exercise.entity";
-import { Course } from "../../course/entities/course.entity";
 import { StudentCourse } from "../../student-course/entities/student-course.entity";
 
 @Entity({ name: "std_exercise" })

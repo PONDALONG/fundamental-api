@@ -36,5 +36,4 @@ export class Exercise {
   course: Course;
 
 
-
 }
