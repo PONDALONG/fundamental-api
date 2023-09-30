@@ -8,6 +8,8 @@ import { AuthService } from "../auth/auth.service";
 import { LoginRequestDto } from "./dto/login-request.dto";
 import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
+import { UserToCsv } from "./dto/user-to-csv";
+import { StudentCourseService } from "../student-course/student-course.service";
 
 @Injectable()
 export class UserService {
@@ -17,7 +19,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly stdCourseService: StudentCourseService
   ) {
     this.createAdmin().then();
   }
@@ -25,25 +28,45 @@ export class UserService {
   async imports(file: Express.Multer.File) {
 
     try {
-      const arr: string[] = await this.findAllStudentId();
+      // const arr: string[] = await this.findAllStudentId();
       const users: User[] = [];
+      const userCsv: UserToCsv[] = [];
 
       let results = await new Promise((resolve, reject) => {
+        const map: User[] = [];
         Readable.from(file.buffer.toString())
           .pipe(csv())
-          .on("data", (data) => users.push(this.mapUserToImports(data)))
+          .on("data", (data) => map.push(this.mapUserToImports(data)))
           .on("end", () => {
-            resolve(users);
+            resolve(map);
           })
           .on("error", (error) => {
-            reject(error);
+            reject(map);
           });
       });
 
-      results = (results as User[]).filter((user: User) => !arr.includes(user.studentId));
+      // results = (results as User[]).filter((user: User) => !arr.includes(user.studentId));
       if ((results as User[]).length > 0) {
-        const save = await this.repository.save(results);
-        if (!save) throw new HttpException("save error", this.BAD_REQUEST);
+
+        for (const u of (results as User[])) {
+          const user = await this.findOneByStudentId(u.studentId);
+          if (!!user) {
+            users.push(user);
+            userCsv.push(new UserToCsv(user, "duplicate"));
+          } else {
+            try {
+              const save = await this.repository.save(u);
+              users.push(save);
+              userCsv.push(new UserToCsv(save, "success"));
+
+            } catch (e) {
+              userCsv.push(new UserToCsv(u, "Save Error : " + e.message));
+            }
+          }
+        }
+
+        //TODO : create student course
+
       } else {
         throw new HttpException("no data", this.BAD_REQUEST);
       }
@@ -103,7 +126,6 @@ export class UserService {
     } catch (e) {
       console.error("createAdmin error : " + e.message);
     }
-
   }
 
   async checkUser(user: User) {
@@ -122,6 +144,7 @@ export class UserService {
     if (!user) {
       throw new UnauthorizedException();
     }
+    delete user.password;
     return user;
   }
 
@@ -139,6 +162,10 @@ export class UserService {
 
   async findOne(id: number) {
     return await this.repository.findOne({ where: { userId: id } });
+  }
+
+  async findOneByStudentId(studentId: string) {
+    return await this.repository.findOne({ where: { studentId: studentId } });
   }
 
   private mapUserToImports(data: User): User {

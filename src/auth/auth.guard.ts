@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
           secret: jwtConstants.secret
         }
       );
-      const user = await this.userService.findOne(payload["userId"]);
+      const user = await this.userService.checkUser(payload);
       if (!user) throw new UnauthorizedException();
 
       delete user.password;

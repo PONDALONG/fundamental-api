@@ -9,7 +9,7 @@ import { AuthModule } from "./auth/auth.module";
 import { CourseModule } from "./course/course.module";
 import { StudentCourseModule } from "./student-course/student-course.module";
 import { ExerciseModule } from "./exercise/exercise.module";
-import { BaseEntity } from "./base-entity";
+import { BaseControllers, BaseBaseEntity, BaseServices } from "./base-base-entity";
 import * as process from "process";
 
 @Module({
@@ -25,20 +25,20 @@ import * as process from "process";
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: BaseEntity,
+      entities: BaseBaseEntity,
       synchronize: true
-    }),
-
-
-    UserModule,
-    StudentExerciseModule,
-    AuthModule,
-    CourseModule,
-    StudentCourseModule,
-    ExerciseModule
+    })
+    ,
+    TypeOrmModule.forFeature(BaseBaseEntity)
+    // UserModule,
+    // StudentExerciseModule,
+    // AuthModule,
+    // CourseModule,
+    // StudentCourseModule,
+    // ExerciseModule
   ],
-  controllers: [AppController],
-  providers: [AppService]
+  controllers: BaseControllers,
+  providers: BaseServices
 })
 export class AppModule {
 }
