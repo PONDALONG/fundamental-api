@@ -13,10 +13,7 @@ import { CourseService } from "./course/course.service";
 import { StudentCourseService } from "./student-course/student-course.service";
 import { ExerciseService } from "./exercise/exercise.service";
 import { StudentExerciseService } from "./student-exercise/student-exercise.service";
-import { AppService } from "./app.service";
-import { AppController } from "./app.controller";
 import { AuthService } from "./auth/auth.service";
-import { JwtService } from "@nestjs/jwt";
 
 export const BaseEntity = [
   User,
@@ -27,7 +24,6 @@ export const BaseEntity = [
 ];
 
 export const BaseControllers = [
-  AppController,
   UserController,
   CourseController,
   StudentCourseController,
@@ -36,12 +32,10 @@ export const BaseControllers = [
 ];
 
 export const BaseServices = [
-  AppService,
   UserService,
   CourseService,
   StudentCourseService,
   ExerciseService,
   StudentExerciseService,
-  AuthService,
-  JwtService
+  AuthService
 ];

@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { BaseControllers, BaseEntity, BaseServices } from "./base-entity";
+import { BaseEntity } from "./base-entity";
 import * as process from "process";
-import { JwtModule } from "@nestjs/jwt";
-import { jwtConstants } from "./auth/auth.constants";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { BaseModule } from "./base.module";
 
 @Module({
   imports: [
@@ -22,15 +23,10 @@ import { jwtConstants } from "./auth/auth.constants";
       entities: BaseEntity,
       synchronize: true
     }),
-    TypeOrmModule.forFeature(BaseEntity),
-    JwtModule.register({
-      global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: "30d" }
-    })
+    BaseModule
   ],
-  controllers: BaseControllers,
-  providers: BaseServices
+  controllers: [AppController],
+  providers: [AppService]
 })
 export class AppModule {
 }

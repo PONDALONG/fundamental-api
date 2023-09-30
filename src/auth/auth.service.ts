@@ -18,6 +18,10 @@ export class AuthService {
       role: user.role,
       createDate: user.createDate
     };
-    return await this.jwtService.signAsync(payload);
+    try {
+      return this.jwtService.signAsync(payload);
+    } catch (error) {
+      throw error;
+    }
   }
 }

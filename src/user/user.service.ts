@@ -9,7 +9,6 @@ import { LoginRequestDto } from "./dto/login-request.dto";
 import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
 import { UserToCsv } from "./dto/user-to-csv";
-import { StudentCourseService } from "../student-course/student-course.service";
 
 @Injectable()
 export class UserService {
@@ -19,8 +18,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
-    private readonly authService: AuthService,
-    private readonly stdCourseService: StudentCourseService
+    private readonly authService: AuthService
+    // private readonly stdCourseService: StudentCourseService
   ) {
     this.createAdmin().then();
   }
