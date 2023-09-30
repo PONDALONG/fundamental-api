@@ -1,13 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
+import { Course } from "../../course/entities/course.entity";
 
 @Entity({ name: "exercise" })
 export class Exercise {
 
   @PrimaryGeneratedColumn({ name: "exercise_id" })
   exerciseId: number;
-
-  @Column({ name: "course_id", nullable: false })
-  courseId: number;
 
   @Column({ name: "exercise_name", nullable: false })
   exerciseName: string;
@@ -26,4 +25,16 @@ export class Exercise {
 
   @Column({ name: "exercise_end_date", nullable: false })
   exerciseEndDate: Date;
+
+  //exercise 1-n student-exercise
+  @OneToMany(() => StudentExercise, x => x.exercise)
+  stdExercises: StudentExercise[];
+
+  //exercise n-1 course
+  @ManyToOne(() => Course, x => x.exercises)
+  @JoinColumn({ name: "course_id", referencedColumnName: "courseId" })
+  course: Course;
+
+
+
 }

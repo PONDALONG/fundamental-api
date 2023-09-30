@@ -17,15 +17,14 @@ import { LoginRequestDto } from "./dto/login-request.dto";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
-import { MyLogger } from "../ีutils/MyLogger";
-import { Res } from "../ีutils/Res";
+import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
+import { StudentCourse } from "../student-course/entities/student-course.entity";
+import { Course } from "../course/entities/course.entity";
 
 @Controller("user")
 export class UserController {
-  private readonly logger = new MyLogger(UserController.name);
   private readonly response = new Res();
-  private readonly transaction: string = new Date().getTime().toString();
 
   constructor(
     private readonly service: UserService
@@ -47,25 +46,15 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
   @UseGuards(AdminGuard)
-  async imports(@UploadedFile() file: Express.Multer.File, @Request() auth: any) {
-
-    const user: User = auth.user as User;
-    this.logger.logStart(this.transaction, this.imports.name, user.studentId, user.role);
-    this.logger.logInfo(this.transaction, user.studentId, user.role, file.originalname);
+  async imports(@Request() auth: any, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
 
     try {
-
       await this.service.imports(file);
-
       return this.response.ok();
-
     } catch (e) {
       throw e;
 
     } finally {
-
-      this.logger.logEnd(this.transaction, this.imports.name, user.studentId, user.role);
-
     }
   }
 
@@ -73,23 +62,7 @@ export class UserController {
   @Get("profile")
   @HttpCode(HttpStatus.OK)
   async profile(@Request() auth: any) {
-
-    const user: User = auth.user as User;
-    this.logger.logStart(this.transaction, this.profile.name, user.studentId, user.role);
-    this.logger.logInfo(this.transaction, user.studentId, user.role);
-
-    try {
-      
-      return user;
-
-    } catch (e) {
-      throw e;
-
-    } finally {
-
-      this.logger.logEnd(this.transaction, this.profile.name, user.studentId, user.role);
-
-    }
+    return auth.user as User;
   }
 
   @Get(":id")

@@ -1,15 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Exercise } from "../../exercise/entities/exercise.entity";
+import { Course } from "../../course/entities/course.entity";
+import { StudentCourse } from "../../student-course/entities/student-course.entity";
 
 @Entity({ name: "std_exercise" })
 export class StudentExercise {
   @PrimaryGeneratedColumn({ name: "std_exec_id" })
   stdExecId: number;
-
-  @Column({ name: "exercise_id" })
-  exerciseId: number;
-
-  @Column({ name: "std_course_id" })
-  stdCourseId: number;
 
   @Column({ name: "std_exec_result", type: "longtext" })
   stdExecResult: string;
@@ -22,4 +19,14 @@ export class StudentExercise {
 
   @Column({ name: "std_exec_score" })
   stdExecScore: number;
+
+  //student-exercise n-1 exercise
+  @ManyToOne(() => Exercise, x => x.stdExercises)
+  @JoinColumn({ name: "exercise_id", referencedColumnName: "exerciseId" })
+  exercise: Exercise;
+
+  //student-exercise n-1 student-course
+  @ManyToOne(() => StudentCourse, x => x.stdExercises)
+  @JoinColumn({ name: "std_course_id", referencedColumnName: "stdCourseId" })
+  studentCourse: StudentCourse;
 }

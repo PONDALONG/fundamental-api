@@ -3,7 +3,7 @@ import { Repository } from "typeorm";
 import { Course } from "./entities/course.entity";
 import { CourseCreateRequestDto } from "./dto/course-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { MyLogger } from "../ีutils/MyLogger";
+import { MyLogger } from "../utils/MyLogger";
 
 @Injectable()
 export class CourseService {

@@ -16,6 +16,11 @@ export class MyLogger extends ConsoleLogger {
     super.error(str);
   }
 
+  logSuccess(transaction: string, user: string, role: string, message: any = null) {
+    let str = `[${transaction}] [user: ${user}] [role: ${role}] [${JSON.stringify(message)}]`;
+    super.log(str);
+  }
+
   logStart(transaction: string, message: string, user: string, role: string) {
     let str = `[${transaction}] [user: ${user}] [role: ${role}] [${message}]  --- START ---`;
     super.log(str);

@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CourseStatus } from "../dto/course-status.enum";
+import { Exercise } from "../../exercise/entities/exercise.entity";
+import { StudentCourse } from "../../student-course/entities/student-course.entity";
 
 @Entity({ name: "course" })
 export class Course {
@@ -31,5 +33,12 @@ export class Course {
   @Column({ name: "course_create_date", nullable: false })
   courseCreateDate: Date = new Date();
 
+  //course 1-n exercise
+  @OneToMany(() => Exercise, x => x.course)
+  exercises: Exercise[];
+
+  //course 1-n student-course
+  @OneToMany(() => StudentCourse, x => x.course)
+  studentCourse: StudentCourse[];
 
 }

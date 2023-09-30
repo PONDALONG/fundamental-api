@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserRole } from "../dto/user-role.enum";
+import { StudentCourse } from "../../student-course/entities/student-course.entity";
 
 @Entity()
 export class User {
@@ -26,4 +27,8 @@ export class User {
 
   @Column({ nullable: true, name: "class" })
   class: string;
+
+  //user 1-n student-course
+  @OneToMany(() => StudentCourse, x => x.user)
+  stdCourseId: StudentCourse[];
 }
