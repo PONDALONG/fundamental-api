@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { UserService } from "../user/user.service";
-import process from "process";
+import * as process from "process";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
       delete user.password;
 
       request["user"] = user;
-    } catch {
+    } catch (e){
       throw new UnauthorizedException();
     }
     return true;
