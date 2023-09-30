@@ -15,15 +15,16 @@ import { ExerciseService } from "./exercise/exercise.service";
 import { StudentExerciseService } from "./student-exercise/student-exercise.service";
 import { AuthService } from "./auth/auth.service";
 
-export const BaseEntity = [
+export const BaseImport = [];
+
+export const ImportEntities = [
   User,
   StudentCourse,
   Exercise,
   Course,
   StudentExercise
 ];
-
-export const BaseControllers = [
+export const ImportControllers = [
   UserController,
   CourseController,
   StudentCourseController,
@@ -31,7 +32,7 @@ export const BaseControllers = [
   StudentExerciseController
 ];
 
-export const BaseServices = [
+export const ImportServices = [
   UserService,
   CourseService,
   StudentCourseService,
