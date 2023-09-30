@@ -19,6 +19,7 @@ import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
+import * as process from "process";
 
 @Controller("user")
 export class UserController {

@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=XoxUer
+      - MYSQL_PASSWORD=#1234PWD
+    ports:
+      - "3307:3306"
+    volumes:
+      - dbdata2:/var/lib/mysql
+volumes:
+  dbdata2:
