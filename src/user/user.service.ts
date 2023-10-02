@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import * as csv from "csv-parser";
@@ -9,27 +9,26 @@ import { LoginRequestDto } from "./dto/login-request.dto";
 import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
 import { UserToCsv } from "./dto/user-to-csv";
+import { UserAndCsv } from "./dto/user-and-csv";
 
 @Injectable()
 export class UserService {
   private readonly salt = bcrypt.genSaltSync(10);
-  private readonly BAD_REQUEST = HttpStatus.BAD_REQUEST;
 
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
     private readonly authService: AuthService
-    // private readonly stdCourseService: StudentCourseService
   ) {
     this.createAdmin().then();
   }
 
   async imports(file: Express.Multer.File) {
-
+    console.log(file);
+    const users: User[] = [];
+    const userCsv: UserToCsv[] = [];
+    const userAndCsv = new UserAndCsv();
     try {
-      // const arr: string[] = await this.findAllStudentId();
-      const users: User[] = [];
-      const userCsv: UserToCsv[] = [];
 
       let results = await new Promise((resolve, reject) => {
         const map: User[] = [];
@@ -39,12 +38,11 @@ export class UserService {
           .on("end", () => {
             resolve(map);
           })
-          .on("error", (error) => {
+          .on("error", () => {
             reject(map);
           });
       });
 
-      // results = (results as User[]).filter((user: User) => !arr.includes(user.studentId));
       if ((results as User[]).length > 0) {
 
         for (const u of (results as User[])) {
@@ -63,11 +61,12 @@ export class UserService {
             }
           }
         }
-
-        //TODO : create student course
+        userAndCsv.user = users;
+        userAndCsv.userToCsv = userCsv;
+        return userAndCsv;
 
       } else {
-        throw new HttpException("no data", this.BAD_REQUEST);
+        throw new BadRequestException("no data");
       }
 
     } catch (e) {
@@ -98,12 +97,12 @@ export class UserService {
       if (user) {
         if (await this.compare(req.password, user.password)) {
           const token = await this.authService.tokenize(user);
-          return { "access_token": token };
+          return { "access_token": token, profile: user };
         } else {
-          throw new HttpException("password incorrect", this.BAD_REQUEST);
+          throw new BadRequestException("password incorrect");
         }
       } else {
-        throw new HttpException("user not found", this.BAD_REQUEST);
+        throw new BadRequestException("user not found");
       }
     } catch (e) {
       console.error("login error : " + e.message);

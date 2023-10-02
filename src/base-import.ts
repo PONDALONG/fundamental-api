@@ -19,9 +19,9 @@ export const BaseImport = [];
 
 export const ImportEntities = [
   User,
+  Course,
   StudentCourse,
   Exercise,
-  Course,
   StudentExercise
 ];
 export const ImportControllers = [
@@ -33,9 +33,9 @@ export const ImportControllers = [
 ];
 
 export const ImportServices = [
-  UserService,
   CourseService,
   StudentCourseService,
+  UserService,
   ExerciseService,
   StudentExerciseService,
   AuthService

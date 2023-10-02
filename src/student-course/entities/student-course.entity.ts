@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Course } from "../../course/entities/course.entity";
 import { User } from "../../user/entities/user.entity";
+import { StdCourseStatus } from "./stdCourseStatus";
 
 @Entity({ name: "std_course" })
 export class StudentCourse {
@@ -12,7 +13,7 @@ export class StudentCourse {
   stdCourseDate: Date = new Date();
 
   @Column({ name: "std_course_status" })
-  stdCourseStatus: string;
+  stdCourseStatus: string = StdCourseStatus.ACTIVE;
 
   //student-course n-1 course
   @ManyToOne(() => Course, x => x.studentCourse)

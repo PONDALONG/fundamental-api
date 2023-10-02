@@ -3,6 +3,8 @@ import { Repository } from "typeorm";
 import { Course } from "./entities/course.entity";
 import { CourseCreateRequestDto } from "./dto/course-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "../user/entities/user.entity";
+import { StdCourseStatus } from "../student-course/entities/stdCourseStatus";
 
 @Injectable()
 export class CourseService {
@@ -44,5 +46,42 @@ export class CourseService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async findAll() {
+    try {
+      const result = await this.repository.find();
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async findByCourseId(courseId: number) {
+    try {
+      const result = await this.repository.findOne({
+        where: {
+          courseId: courseId
+        }
+      });
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async findAllByUser(user: User) {
+    return await this.repository.find(
+      {
+        where: {
+          studentCourse: {
+            user: {
+              userId: user.userId
+            },
+            stdCourseStatus: StdCourseStatus.ACTIVE
+          }
+        }
+      }
+    );
   }
 }

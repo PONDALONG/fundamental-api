@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
@@ -21,6 +22,7 @@ import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
+@UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
   private readonly response = new Res();
 
@@ -43,7 +45,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
   @UseGuards(AdminGuard)
-  async imports(@Request() auth: any, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
+  async imports(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
 
     try {
       await this.service.imports(file);

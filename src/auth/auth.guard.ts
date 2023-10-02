@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
       delete user.password;
 
       request["user"] = user;
-    } catch (e){
+    } catch (e) {
       throw new UnauthorizedException();
     }
     return true;
