@@ -21,17 +21,23 @@ export class Course {
   @Column({ name: "course_term", nullable: false }) //unique
   courseTerm: number;
 
-  @Column({ name: "course_description", nullable: false, type: "longtext" })
+  @Column({ name: "course_code", nullable: false })
+  courseCode: string;
+
+  @Column({ name: "course_description", nullable: true, type: "longtext" })
   courseDescription: string;
 
-  @Column({ name: "course_status", nullable: false })
-  courseStatus: string = CourseStatus.OPEN;
+  @Column({ name: "course_status", nullable: false, default: CourseStatus.CLOSED })
+  courseStatus: string;
 
-  @Column({ name: "course_start_date", nullable: false })
-  courseStartDate: Date = new Date();
+  @Column({ name: "course_start_date", nullable: true })
+  courseStartDate: Date;
 
-  @Column({ name: "course_create_date", nullable: false })
-  courseCreateDate: Date = new Date();
+  @Column({ name: "course_end_date", nullable: true })
+  courseEndDate: Date;
+
+  @Column({ name: "course_create_date", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  courseCreateDate: Date;
 
   //course 1-n exercise
   @OneToMany(() => Exercise, x => x.course)
