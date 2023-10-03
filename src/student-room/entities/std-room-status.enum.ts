@@ -1,4 +1,4 @@
-export enum StdCourseStatus {
+export enum StdRoomStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE"
 }

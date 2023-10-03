@@ -1,16 +1,16 @@
 import { User } from "./user/entities/user.entity";
 import { StudentExercise } from "./student-exercise/entities/student-exercise.entity";
-import { Course } from "./course/entities/course.entity";
+import { Room } from "./room/entities/room.entity";
 import { Exercise } from "./exercise/entities/exercise.entity";
-import { StudentCourse } from "./student-course/entities/student-course.entity";
+import { StudentRoom } from "./student-room/entities/student-room.entity";
 import { UserController } from "./user/user.controller";
-import { CourseController } from "./course/course.controller";
-import { StudentCourseController } from "./student-course/student-course.controller";
+import { RoomController } from "./room/room.controller";
+import { StudentRoomController } from "./student-room/student-room.controller";
 import { ExerciseController } from "./exercise/exercise.controller";
 import { StudentExerciseController } from "./student-exercise/student-exercise.controller";
 import { UserService } from "./user/user.service";
-import { CourseService } from "./course/course.service";
-import { StudentCourseService } from "./student-course/student-course.service";
+import { RoomService } from "./room/room.service";
+import { StudentRoomService } from "./student-room/student-room.service";
 import { ExerciseService } from "./exercise/exercise.service";
 import { StudentExerciseService } from "./student-exercise/student-exercise.service";
 import { AuthService } from "./auth/auth.service";
@@ -22,24 +22,24 @@ export const BaseImport = [];
 
 export const ImportEntities = [
   User,
-  Course,
-  StudentCourse,
+  Room,
+  StudentRoom,
   Exercise,
   StudentExercise,
   FileResource
 ];
 export const ImportControllers = [
   UserController,
-  CourseController,
-  StudentCourseController,
+  RoomController,
+  StudentRoomController,
   ExerciseController,
   StudentExerciseController,
   FileResourceController
 ];
 
 export const ImportServices = [
-  CourseService,
-  StudentCourseService,
+  RoomService,
+  StudentRoomService,
   UserService,
   ExerciseService,
   StudentExerciseService,

@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
-import { Course } from "../../course/entities/course.entity";
+import { Room } from "../../room/entities/room.entity";
 import { FileResource } from "../../file-resource/entities/file-resource.entity";
 
 @Entity({ name: "exercise" })
@@ -31,10 +31,10 @@ export class Exercise {
   @OneToMany(() => StudentExercise, x => x.exercise)
   stdExercises: StudentExercise[];
 
-  //exercise n-1 course
-  @ManyToOne(() => Course, x => x.exercises)
-  @JoinColumn({ name: "course_id", referencedColumnName: "courseId" })
-  course: Course;
+  //exercise n-1 room
+  @ManyToOne(() => Room, x => x.exercises)
+  @JoinColumn({ name: "room_id", referencedColumnName: "roomId" })
+  room: Room;
 
   @OneToMany(() => FileResource, x => x.exercise)
   fileResources: FileResource[];

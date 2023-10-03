@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserRole } from "../dto/user-role.enum";
-import { StudentCourse } from "../../student-course/entities/student-course.entity";
 import { Exclude } from "class-transformer";
+import { StudentRoom } from "../../student-room/entities/student-room.entity";
 
 @Entity()
 export class User {
@@ -34,7 +34,7 @@ export class User {
   image: string;
 
   //user 1-n student-course
-  @OneToMany(() => StudentCourse, x => x.user)
-  stdCourseId: StudentCourse[];
+  @OneToMany(() => StudentRoom, x => x.user)
+  stdCourseId: StudentRoom[];
 
 }

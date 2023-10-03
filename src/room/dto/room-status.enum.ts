@@ -1,4 +1,4 @@
-export enum CourseStatus {
+export enum RoomStatus {
   OPEN = "OPEN",
   CLOSED = "CLOSED"
 }

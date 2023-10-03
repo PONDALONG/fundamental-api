@@ -1,24 +1,24 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from "@nestjs/common";
-import { CourseCreateRequestDto } from "./dto/course-create-request.dto";
-import { CourseService } from "./course.service";
+import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
+import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "../user/entities/user.entity";
 
 @Controller("course")
-export class CourseController {
+export class RoomController {
   private readonly response = new Res();
 
   constructor(
-    private readonly service: CourseService
+    private readonly service: RoomService
   ) {
   }
 
   @UseGuards(AdminGuard)
   @Post("create")
   @HttpCode(HttpStatus.OK)
-  async create(@Body() input: CourseCreateRequestDto, @Request() auth: any) {
+  async create(@Body() input: RoomCreateRequestDto, @Request() auth: any) {
     try {
       await this.service.create(input);
       return this.response.ok();

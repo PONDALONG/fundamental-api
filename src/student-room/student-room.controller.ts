@@ -11,7 +11,7 @@ import {
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
-import { StudentCourseService } from "./student-course.service";
+import { StudentRoomService } from "./student-room.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "../user/entities/user.entity";
 import { AdminGuard } from "../auth/admin.guard";
@@ -19,9 +19,9 @@ import { FileInterceptor } from "@nestjs/platform-express";
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller("student-course")
-export class StudentCourseController {
+export class StudentRoomController {
   constructor(
-    private readonly service: StudentCourseService
+    private readonly service: StudentRoomService
   ) {
   }
 

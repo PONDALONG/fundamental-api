@@ -1,20 +1,20 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { StudentCourse } from "./entities/student-course.entity";
+import { StudentRoom } from "./entities/student-room.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { Repository } from "typeorm";
-import { CourseService } from "../course/course.service";
+import { RoomService } from "../room/room.service";
 import { UserService } from "../user/user.service";
-import { Course } from "../course/entities/course.entity";
+import { Room } from "../room/entities/room.entity";
 import { UserAndCsv } from "../user/dto/user-and-csv";
 
 @Injectable()
-export class StudentCourseService {
+export class StudentRoomService {
 
   constructor(
-    @InjectRepository(StudentCourse)
-    private readonly repository: Repository<StudentCourse>,
-    private readonly courseService: CourseService,
+    @InjectRepository(StudentRoom)
+    private readonly repository: Repository<StudentRoom>,
+    private readonly roomService: RoomService,
     private readonly userService: UserService
   ) {
   }
@@ -22,26 +22,26 @@ export class StudentCourseService {
   async importStudent(file: Express.Multer.File, courseId: any) {
 
     try {
-      const course = await this.courseService.findByCourseId(courseId);
-      if (!course) throw new BadRequestException("course not found");
+      const room = await this.roomService.findByRoomId(courseId);
+      if (!room) throw new BadRequestException("room not found");
 
       const res: UserAndCsv = await this.userService.imports(file);
 
       for (const i in res.user) {
         try {
-          const haveStd = await this.findByUserAndCourse(res.user[i], course);
+          const haveStd = await this.findByUserAndRoom(res.user[i], room);
           if (!!haveStd) {
-            res.userToCsv[i].resultCreateStudentCourse = "duplicate";
+            res.userToCsv[i].resultCreateStudentRoom = "duplicate";
             throw new Error("duplicate");
           }
 
-          const stdCourse = new StudentCourse();
+          const stdCourse = new StudentRoom();
           stdCourse.user = res.user[i];
-          stdCourse.course = course;
-          const save = await this.repository.save(stdCourse);
-          res.userToCsv[i].resultCreateStudentCourse = "success";
+          stdCourse.room = room;
+          await this.repository.save(stdCourse);
+          res.userToCsv[i].resultCreateStudentRoom = "success";
         } catch (e) {
-          res.userToCsv[i].resultCreateStudentCourse = "save error : " + e.message;
+          res.userToCsv[i].resultCreateStudentRoom = "save error : " + e.message;
         }
       }
       return res.userToCsv;
@@ -68,12 +68,12 @@ export class StudentCourseService {
     );
   }
 
-  async findByUserAndCourse(user: User, course: Course) {
+  async findByUserAndRoom(user: User, room: Room) {
     return await this.repository.findOne(
       {
         where: {
           user: user,
-          course: course
+          room: room
         }
       });
   }

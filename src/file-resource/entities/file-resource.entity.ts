@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { FileResourceType } from "./file-resource-type.enum";
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
 import { Exercise } from "../../exercise/entities/exercise.entity";
@@ -23,6 +23,7 @@ export class FileResource {
   @JoinColumn({ name: "std_exec_id", referencedColumnName: "stdExecId" })
   stdExercises: StudentExercise;
 
-  @OneToMany(() => Exercise, x => x.fileResources, { nullable: true })
+  @ManyToOne(() => Exercise, x => x.fileResources, { nullable: true })
+  @JoinColumn({ name: "exercise_id", referencedColumnName: "exerciseId" })
   exercise: Exercise;
 }
