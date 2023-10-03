@@ -16,6 +16,7 @@ import { AuthGuard } from "../auth/auth.guard";
 import { User } from "../user/entities/user.entity";
 import { AdminGuard } from "../auth/admin.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { RoomCreateRequestDto } from "../room/dto/room-create-request.dto";
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller("student-course")
@@ -37,7 +38,7 @@ export class StudentRoomController {
   }
 
   @UseGuards(AdminGuard)
-  @Get("findAll")
+  @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findAll() {
     try {
@@ -48,14 +49,25 @@ export class StudentRoomController {
   }
 
   @UseGuards(AdminGuard)
-  @Post("importStudent")
+  @Post("import-student")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
-  async importStudent(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+  async importStudent(@UploadedFile() file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
     try {
-      return await this.service.importStudent(file, body.courseId);
+      return await this.service.importStudent(file, body.roomId);
     } catch (e) {
       throw e;
     }
   }
+
+  // @UseGuards(AdminGuard)
+  // @Post("update-student-room")
+  // @HttpCode(HttpStatus.OK)
+  // async updateStudentRoom(@Body() body: RoomCreateRequestDto) {
+  //   try {
+  //     return await this.service.updateStudentRoom(body);
+  //   } catch (e) {
+  //     throw e;
+  //   }
+  // }
 }
