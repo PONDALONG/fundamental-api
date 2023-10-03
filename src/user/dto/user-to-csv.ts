@@ -11,7 +11,7 @@ export class UserToCsv {
   constructor(user: User, result: string) {
     this.firstname = user.firstname;
     this.lastname = user.lastname;
-    this.studentId = user.studentId;
+    this.studentId = user.studentCode;
     this.class = user.class;
     this.resultCreateUser = result;
   }

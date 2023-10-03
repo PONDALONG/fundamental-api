@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
 import { Course } from "../../course/entities/course.entity";
-import { FileExercise } from "../../file-exercise/entities/file-exercise.entity";
+import { FileResource } from "../../file-resource/entities/file-resource.entity";
 
 @Entity({ name: "exercise" })
 export class Exercise {
@@ -36,7 +36,6 @@ export class Exercise {
   @JoinColumn({ name: "course_id", referencedColumnName: "courseId" })
   course: Course;
 
-  //exercise 1-n file-exercise
-  @OneToMany(() => FileExercise, x => x.exercise)
-  fileExercise: FileExercise[];
+  @OneToMany(() => FileResource, x => x.exercise)
+  fileResources: FileResource[];
 }

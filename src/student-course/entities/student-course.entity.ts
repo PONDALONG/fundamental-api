@@ -9,11 +9,11 @@ export class StudentCourse {
   @PrimaryGeneratedColumn({ name: "std_course_id" })
   stdCourseId: number;
 
-  @Column({ name: "std_course_date" })
-  stdCourseDate: Date = new Date();
+  @Column({ name: "std_course_date", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  stdCourseDate: Date;
 
-  @Column({ name: "std_course_status" })
-  stdCourseStatus: string = StdCourseStatus.ACTIVE;
+  @Column({ name: "std_course_status", nullable: false, default: StdCourseStatus.ACTIVE })
+  stdCourseStatus: string;
 
   //student-course n-1 course
   @ManyToOne(() => Course, x => x.studentCourse)

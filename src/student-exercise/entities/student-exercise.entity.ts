@@ -14,8 +14,8 @@ export class StudentExercise {
   @Column({ name: "std_exec_status" })
   stdExecStatus: string;
 
-  @Column({ name: "std_exec_date_time" })
-  stdExecDateTime: Date = new Date();
+  @Column({ name: "std_exec_date_time", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  stdExecDateTime: Date;
 
   @Column({ name: "std_exec_score" })
   stdExecScore: number;

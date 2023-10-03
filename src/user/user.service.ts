@@ -46,7 +46,7 @@ export class UserService {
       if ((results as User[]).length > 0) {
 
         for (const u of (results as User[])) {
-          const user = await this.findOneByStudentId(u.studentId);
+          const user = await this.findOneByStudentId(u.studentCode);
           if (!!user) {
             users.push(user);
             userCsv.push(new UserToCsv(user, "duplicate"));
@@ -84,7 +84,7 @@ export class UserService {
     const studentId: string[] = [];
 
     for (let user of users) {
-      studentId.push(user.studentId);
+      studentId.push(user.studentCode);
     }
 
     return studentId;
@@ -92,7 +92,7 @@ export class UserService {
 
   async login(req: LoginRequestDto) {
     try {
-      const user = await this.repository.findOne({ where: { studentId: req.studentId } });
+      const user = await this.repository.findOne({ where: { studentCode: req.studentId } });
 
       if (user) {
         if (await this.compare(req.password, user.password)) {
@@ -117,7 +117,7 @@ export class UserService {
       const user = new User();
       user.firstname = "admin";
       user.lastname = "admin";
-      user.studentId = "admin";
+      user.studentCode = "admin";
       user.password = this.encode("admin" + "Ab*");
       user.role = UserRole.TEACHER;
       await this.repository.save(user);
@@ -147,7 +147,7 @@ export class UserService {
   }
 
   async findAdmin() {
-    return await this.repository.findOne({ where: { studentId: "admin" } });
+    return await this.repository.findOne({ where: { studentCode: "admin" } });
   }
 
   encode(pwd: string) {
@@ -163,15 +163,15 @@ export class UserService {
   }
 
   async findOneByStudentId(studentId: string) {
-    return await this.repository.findOne({ where: { studentId: studentId } });
+    return await this.repository.findOne({ where: { studentCode: studentId } });
   }
 
   private mapUserToImports(data: User): User {
     const user = new User();
     user.firstname = data.firstname.trim();
     user.lastname = data.lastname.trim();
-    user.studentId = data.studentId.trim();
-    user.password = this.encode(data.studentId.trim() + "Ab*");
+    user.studentCode = data.studentCode.trim();
+    user.password = this.encode(data.studentCode.trim() + "Ab*");
     return user;
   }
 }

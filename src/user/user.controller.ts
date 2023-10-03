@@ -35,6 +35,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() req: LoginRequestDto) {
     try {
+      console.log(req);
       return await this.service.login(req);
     } catch (error) {
       throw new HttpException(error.message, error.status);
