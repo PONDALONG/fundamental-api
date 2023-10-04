@@ -10,6 +10,7 @@ import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
 import { UserToCsv } from "./dto/user-to-csv";
 import { UserAndCsv } from "./dto/user-and-csv";
+import { UserStatus } from "./dto/user-status.enum";
 
 @Injectable()
 export class UserService {
@@ -46,16 +47,26 @@ export class UserService {
       if ((results as User[]).length > 0) {
 
         for (const u of (results as User[])) {
-          const user = await this.findOneByStudentId(u.studentCode);
+          const user: User = await this.findOneByStudentId(u.studentCode);
           if (!!user) {
-            users.push(user);
-            userCsv.push(new UserToCsv(user, "duplicate"));
+            if (user.userStatus === UserStatus.ACTIVE) {
+              users.push(user);
+              userCsv.push(new UserToCsv(user, "duplicate"));
+            } else {
+              try {
+                user.userStatus = UserStatus.ACTIVE;
+                const save: User = await this.repository.save(user);
+                users.push(save);
+                userCsv.push(new UserToCsv(save, "success"));
+              } catch (e) {
+                userCsv.push(new UserToCsv(user, "Save Error : " + e.message));
+              }
+            }
           } else {
             try {
               const save = await this.repository.save(u);
               users.push(save);
               userCsv.push(new UserToCsv(save, "success"));
-
             } catch (e) {
               userCsv.push(new UserToCsv(u, "Save Error : " + e.message));
             }
