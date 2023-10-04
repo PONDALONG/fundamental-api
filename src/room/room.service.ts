@@ -5,6 +5,7 @@ import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { StdRoomStatus } from "../student-room/entities/std-room-status.enum";
+import { RoomStatus } from "./dto/room-status.enum";
 
 @Injectable()
 export class RoomService {
@@ -70,16 +71,17 @@ export class RoomService {
     }
   }
 
-  async findAllByUser(user: User) {
+  async findByStudent(user: User) {
     return await this.repository.find(
       {
         where: {
           studentRooms: {
+            stdCourseStatus: StdRoomStatus.ACTIVE,
             user: {
               userId: user.userId
-            },
-            stdCourseStatus: StdRoomStatus.ACTIVE
-          }
+            }
+          },
+          roomStatus: RoomStatus.OPEN
         }
       }
     );

@@ -39,11 +39,11 @@ export class RoomController {
   }
 
   @UseGuards(AuthGuard)
-  @Get("findAllByUser")
+  @Get("find-by-student")
   @HttpCode(HttpStatus.OK)
-  async findAllByUser(@Request() auth: any) {
+  async findByStudent(@Request() auth: any) {
     try {
-      return await this.service.findAllByUser(auth["user"] as User);
+      return await this.service.findByStudent(auth["user"] as User);
     } catch (e) {
       throw e;
     }

@@ -20,7 +20,7 @@ export class StudentRoomService {
   ) {
   }
 
-  async importStudent(file: Express.Multer.File, roomId: number) {
+  async import(file: Express.Multer.File, roomId: number) {
 
     try {
 
@@ -37,10 +37,10 @@ export class StudentRoomService {
           try {
             const haveStd: StudentRoom = await this.findByUserAndRoom(res.user[i], room);
             if (!!haveStd) {
-              if (haveStd.stdCourseStatus ===StdRoomStatus.ACTIVE) {
+              if (haveStd.stdCourseStatus === StdRoomStatus.ACTIVE) {
                 res.userToCsv[i].resultCreateStudentRoom = "duplicate";
                 throw new Error("duplicate");
-              }else {
+              } else {
                 haveStd.stdCourseStatus = StdRoomStatus.ACTIVE;
                 await this.repository.save(haveStd);
                 res.userToCsv[i].resultCreateStudentRoom = "success";
@@ -74,14 +74,6 @@ export class StudentRoomService {
     );
   }
 
-  async findAll() {
-    return await this.repository.find(
-      {
-        relations: ["user", "course"]
-      }
-    );
-  }
-
   async findByUserAndRoom(user: User, room: Room) {
     return await this.repository.findOne(
       {
@@ -90,5 +82,17 @@ export class StudentRoomService {
           room: room
         }
       });
+  }
+
+  async update(input: any) {
+
+  }
+
+  async findById(id: number) {
+    return await this.repository.findOne({
+      where: {
+        stdCourseId: id
+      }
+    });
   }
 }

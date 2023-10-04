@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
@@ -19,55 +20,37 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { RoomCreateRequestDto } from "../room/dto/room-create-request.dto";
 
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller("student-course")
+@Controller("student-room")
 export class StudentRoomController {
   constructor(
     private readonly service: StudentRoomService
   ) {
   }
 
-  @UseGuards(AuthGuard)
-  @Get("findAllStdCourse")
-  @HttpCode(HttpStatus.OK)
-  async findAllStdCourse(@Request() auth: any) {
-    try {
-      return await this.service.findAllByUser(auth["user"] as User);
-    } catch (e) {
-      throw e;
-    }
-  }
-
   @UseGuards(AdminGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
-  async findAll() {
+  async findAll(@Query("roomId") roomId?: number) {
+    //todo: find all
+    //todo : find all by room
+  }
+
+  @UseGuards(AdminGuard)
+  @Post("import")
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor("file"))
+  async import(@UploadedFile() file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
     try {
-      return await this.service.findAll();
+      return await this.service.import(file, body.roomId);
     } catch (e) {
       throw e;
     }
   }
 
   @UseGuards(AdminGuard)
-  @Post("import-student")
+  @Post("update")
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor("file"))
-  async importStudent(@UploadedFile() file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
-    try {
-      return await this.service.importStudent(file, body.roomId);
-    } catch (e) {
-      throw e;
-    }
+  async update(@Body() body: RoomCreateRequestDto) {
+    //todo: update
   }
-
-  // @UseGuards(AdminGuard)
-  // @Post("update-student-room")
-  // @HttpCode(HttpStatus.OK)
-  // async updateStudentRoom(@Body() body: RoomCreateRequestDto) {
-  //   try {
-  //     return await this.service.updateStudentRoom(body);
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
 }

@@ -1,0 +1,28 @@
+fundamental
+
+▶️ USER
+	⨀ profile						user/profile
+	⨀ login							user/login
+	⨀ change-password				user/change-password
+
+▶️ STUDENT-ROOM
+	⨀ import						student-room/import
+	⨀ update						student-room/update
+	⨀ find-by-room					student-room/find-by-room/:roomId
+
+▶️ ROOM
+	⨀ create						room/create
+	⨀ update						room/update
+
+▶️ EXERCISE
+	⨀ create						exercise/create
+	⨀ find-by-room					exercise/find-by-room/:roomId
+	⨀ update						exercise/update
+
+▶️ STUDENT-EXERCISE
+	⨀ send-exercise					student-exercise/send-exercise
+	⨀ find-by-id					student-exercise/find-by-id/:stdExecId
+	⨀ check-exercise-by-student		student-exercise/check-exercise-by-student/:studentId
+
+▶️ FILE-RESOURSE
+	⨀ file

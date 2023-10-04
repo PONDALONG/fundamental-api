@@ -42,22 +42,6 @@ export class UserController {
     }
   }
 
-  @Post("imports")
-  @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor("file"))
-  @UseGuards(AdminGuard)
-  async imports(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
-
-    try {
-      await this.service.imports(file);
-      return this.response.ok();
-    } catch (e) {
-      throw e;
-
-    } finally {
-    }
-  }
-
   @UseGuards(AuthGuard)
   @Get("profile")
   @HttpCode(HttpStatus.OK)
@@ -65,13 +49,10 @@ export class UserController {
     return auth.user as User;
   }
 
-  @Get(":id")
+  @UseGuards(AuthGuard)
+  @Post("change-password")
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param("id") id: number) {
-    try {
-      return await this.service.findOne(id);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
+  async changePassword(@Request() auth: any, @Body() body: any) {
+    //todo: change password
   }
 }
