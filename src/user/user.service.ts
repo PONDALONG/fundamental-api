@@ -48,27 +48,37 @@ export class UserService {
 
         for (const u of (results as User[])) {
           const user: User = await this.findOneByStudentId(u.studentCode);
-          if (!!user) {
-            if (user.userStatus === UserStatus.ACTIVE) {
-              users.push(user);
-              userCsv.push(new UserToCsv(user, "duplicate"));
-            } else {
+          if (!!user) { //update user
+            try {
+              this.validateUser(u);
               try {
+
                 user.userStatus = UserStatus.ACTIVE;
+                user.firstname = u.firstname;
+                user.lastname = u.lastname;
+                user.class = u.class;
                 const save: User = await this.repository.save(user);
                 users.push(save);
-                userCsv.push(new UserToCsv(save, "success"));
+                userCsv.push(new UserToCsv(save, "สำเร็จ", true));
               } catch (e) {
-                userCsv.push(new UserToCsv(user, "Save Error : " + e.message));
+                throw new Error("บันทึกข้อมูลผิดพลาด : " + e.message);
               }
-            }
-          } else {
-            try {
-              const save = await this.repository.save(u);
-              users.push(save);
-              userCsv.push(new UserToCsv(save, "success"));
             } catch (e) {
-              userCsv.push(new UserToCsv(u, "Save Error : " + e.message));
+              userCsv.push(new UserToCsv(user, e.message, false));
+            }
+          } else { //create user
+            try {
+              this.validateUser(u);
+              u.password = this.encode(u.studentCode.trim() + "Ab*");
+              try {
+                const save: User = await this.repository.save(u);
+                users.push(save);
+                userCsv.push(new UserToCsv(save, "สำเร็จ", true));
+              } catch (e) {
+                throw new Error("บันทึกข้อมูลผิดพลาด : " + e.message);
+              }
+            } catch (e) {
+              userCsv.push(new UserToCsv(u, e.message, false));
             }
           }
         }
@@ -178,11 +188,29 @@ export class UserService {
   }
 
   private mapUserToImports(data: User): User {
+    console.log(data);
     const user = new User();
-    user.firstname = data.firstname.trim();
-    user.lastname = data.lastname.trim();
-    user.studentCode = data.studentCode.trim();
-    user.password = this.encode(data.studentCode.trim() + "Ab*");
+    user.firstname = data.firstname;
+    user.lastname = data.lastname;
+    user.studentCode = data.studentCode;
+    user.class = data.class;
     return user;
+  }
+
+  private validateUser(user: User): void {
+    const errors: string[] = [];
+    if (!user.firstname || user.firstname.trim() == "") {
+      errors.push("firstname");
+    }
+    if (!user.lastname || user.lastname.trim() == "") {
+      errors.push("lastname");
+    }
+    if (!user.studentCode || user.studentCode.trim() == "") {
+      errors.push("studentCode");
+    }
+
+    if (errors.length > 0) {
+      throw new Error("กรุณาระบุ : " + errors.join(", "));
+    }
   }
 }

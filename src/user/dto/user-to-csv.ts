@@ -5,14 +5,15 @@ export class UserToCsv {
   lastname: string;
   studentId: string;
   class: string;
-  resultCreateUser: string;
-  resultCreateStudentRoom: string;
+  result: string;
+  status: boolean;
 
-  constructor(user: User, result: string) {
+  constructor(user: User, result: string, status: boolean) {
     this.firstname = user.firstname;
     this.lastname = user.lastname;
     this.studentId = user.studentCode;
     this.class = user.class;
-    this.resultCreateUser = result;
+    this.result = result;
+    this.status = status;
   }
 }

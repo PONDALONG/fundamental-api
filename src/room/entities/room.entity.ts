@@ -21,9 +21,6 @@ export class Room {
   @Column({ name: "room_term", nullable: false }) //unique
   roomTerm: number;
 
-  @Column({ name: "room_code", nullable: false })
-  roomCode: string;
-
   @Column({ name: "room_description", nullable: true, type: "longtext" })
   roomDescription: string;
 

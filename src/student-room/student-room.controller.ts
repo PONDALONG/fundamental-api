@@ -27,12 +27,13 @@ export class StudentRoomController {
   ) {
   }
 
-  @UseGuards(AdminGuard)
+  // @UseGuards(AdminGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findAll(@Query("roomId") roomId?: number) {
     //todo: find all
     //todo : find all by room
+    return roomId
   }
 
   @UseGuards(AdminGuard)

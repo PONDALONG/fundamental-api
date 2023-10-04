@@ -18,6 +18,7 @@ export class RoomService {
 
   async create(input: RoomCreateRequestDto) {
     try {
+      this.validateRoom(input);
       await this.checkDuplicateRoom(input);
       const room = new Room();
       room.roomName = input.roomName.trim();
@@ -25,9 +26,11 @@ export class RoomService {
       room.roomYear = input.roomYear;
       room.roomGroup = input.roomGroup.trim();
       room.roomTerm = input.roomTerm;
-
-      const save = await this.repository.save(room);
-      if (!save) throw new BadRequestException("save error");
+      try {
+        return await this.repository.save(room);
+      } catch (e) {
+        throw new BadRequestException("บันทึกข้อมูลผิดพลาด : " + e.message);
+      }
     } catch (e) {
       throw e;
     }
@@ -43,7 +46,7 @@ export class RoomService {
           roomTerm: input.roomTerm
         }
       });
-      if (room) throw new BadRequestException("course duplicate");
+      if (room) throw new BadRequestException("มีข้อมูลชื่อห้องเรียนนี้แล้ว");
     } catch (e) {
       throw e;
     }
@@ -76,7 +79,7 @@ export class RoomService {
       {
         where: {
           studentRooms: {
-            stdCourseStatus: StdRoomStatus.ACTIVE,
+            stdRoomStatus: StdRoomStatus.ACTIVE,
             user: {
               userId: user.userId
             }
@@ -85,5 +88,28 @@ export class RoomService {
         }
       }
     );
+  }
+
+  private validateRoom(data: RoomCreateRequestDto) {
+    const errors: string[] = [];
+    if (!data.roomName || data.roomName.trim() == "") {
+      errors.push("roomName");
+    }
+    if (!data.roomDescription || data.roomDescription.trim() == "") {
+      errors.push("roomDescription");
+    }
+    if (!data.roomYear) {
+      errors.push("roomYear");
+    }
+    if (!data.roomGroup || data.roomGroup.trim() == "") {
+      errors.push("roomGroup");
+    }
+    if (!data.roomTerm) {
+      errors.push("roomTerm");
+    }
+    if (errors.length > 0) {
+      throw new BadRequestException("กรุณาระบุ : " + errors.join(", "));
+    }
+
   }
 }

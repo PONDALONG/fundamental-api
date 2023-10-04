@@ -9,7 +9,7 @@ export class StudentExerciseService {
   constructor(
     @InjectRepository(StudentExercise)
     private readonly repository: Repository<StudentExercise>,
-    private readonly stdCourseService: StudentRoomService
+    private readonly stdRoomService: StudentRoomService
   ) {
   }
 }

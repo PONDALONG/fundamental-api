@@ -27,7 +27,7 @@ export class StudentRoomService {
       let room: Room = null;
       if (!!roomId) {
         room = await this.roomService.findByRoomId(roomId);
-        if (!room) throw new BadRequestException("room not found");
+        if (!room) throw new BadRequestException(`ไม่พบ roomId : ${roomId}`);
       }
 
       const res: UserAndCsv = await this.userService.imports(file);
@@ -35,26 +35,25 @@ export class StudentRoomService {
       if (!!roomId) {
         for (const i in res.user) {
           try {
-            const haveStd: StudentRoom = await this.findByUserAndRoom(res.user[i], room);
+            const haveStd: StudentRoom = await this.findByUser(res.user[i]);
             if (!!haveStd) {
-              if (haveStd.stdCourseStatus === StdRoomStatus.ACTIVE) {
-                res.userToCsv[i].resultCreateStudentRoom = "duplicate";
-                throw new Error("duplicate");
-              } else {
-                haveStd.stdCourseStatus = StdRoomStatus.ACTIVE;
-                await this.repository.save(haveStd);
-                res.userToCsv[i].resultCreateStudentRoom = "success";
-                continue; // skip to next loop
-              }
+              haveStd.stdRoomStatus = StdRoomStatus.ACTIVE;
+              haveStd.room = room;
+              await this.repository.save(haveStd);
+              res.userToCsv[i].result = "สำเร็จ";
+              res.userToCsv[i].status = true;
+              continue; // skip to next loop
             }
 
-            const stdCourse = new StudentRoom();
-            stdCourse.user = res.user[i];
-            stdCourse.room = room;
-            await this.repository.save(stdCourse);
-            res.userToCsv[i].resultCreateStudentRoom = "success";
+            const studentRoom = new StudentRoom();
+            studentRoom.user = res.user[i];
+            studentRoom.room = room;
+            await this.repository.save(studentRoom);
+            res.userToCsv[i].result = "สำเร็จ";
+            res.userToCsv[i].status = true;
           } catch (e) {
-            res.userToCsv[i].resultCreateStudentRoom = "save error : " + e.message;
+            res.userToCsv[i].result = "บันทึกข้อมูลผิดพลาด : " + e.message;
+            res.userToCsv[i].status = false;
           }
         }
       }
@@ -74,12 +73,11 @@ export class StudentRoomService {
     );
   }
 
-  async findByUserAndRoom(user: User, room: Room) {
+  async findByUser(user: User) {
     return await this.repository.findOne(
       {
         where: {
-          user: user,
-          room: room
+          user: user
         }
       });
   }
@@ -91,7 +89,7 @@ export class StudentRoomService {
   async findById(id: number) {
     return await this.repository.findOne({
       where: {
-        stdCourseId: id
+        stdRoomId: id
       }
     });
   }

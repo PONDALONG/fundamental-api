@@ -25,10 +25,10 @@ export class StudentExercise {
   @JoinColumn({ name: "exercise_id", referencedColumnName: "exerciseId" })
   exercise: Exercise;
 
-  //student-exercise n-1 student-course
+  //student-exercise n-1 student-room
   @ManyToOne(() => StudentRoom, x => x.stdExercises)
-  @JoinColumn({ name: "std_course_id", referencedColumnName: "stdCourseId" })
-  studentCourse: StudentRoom;
+  @JoinColumn({ name: "std_room_id", referencedColumnName: "stdRoomId" })
+  studentRoom: StudentRoom;
 
 
   //student-exercise 1-n file-resource

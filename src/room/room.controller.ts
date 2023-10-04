@@ -1,12 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards, UseInterceptors } from "@nestjs/common";
 import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "../user/entities/user.entity";
+import { SizeLimitInterceptor } from "../SizeLimitInterceptor";
 
-@Controller("course")
+@Controller("room")
 export class RoomController {
   private readonly response = new Res();
 

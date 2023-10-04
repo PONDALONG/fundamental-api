@@ -15,13 +15,13 @@ export class User {
   @Column({ nullable: false, name: "lastname" })
   lastname: string;
 
-  @Column({ unique: true, nullable: false, name: "student_code" })
+  @Column({ unique: true, nullable: false, name: "student_code", length: 20 })
   studentCode: string;
 
   @Column({ nullable: false, name: "role", default: UserRole.STUDENT })
   role: string;
 
-  @Column({ nullable: true, name: "user_status" ,default: UserStatus.ACTIVE})
+  @Column({ nullable: true, name: "user_status", default: UserStatus.ACTIVE })
   userStatus: UserStatus;
 
   @Exclude()
@@ -37,8 +37,8 @@ export class User {
   @Column({ nullable: true, name: "profile" })
   image: string;
 
-  //user 1-n student-course
+  //user 1-n student-room
   @OneToMany(() => StudentRoom, x => x.user)
-  stdCourseId: StudentRoom[];
+  stdRoomId: StudentRoom[];
 
 }
