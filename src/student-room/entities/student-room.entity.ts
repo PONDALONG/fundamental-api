@@ -26,7 +26,7 @@ export class StudentRoom {
   stdExercises: StudentExercise[];
 
   //student-room n-1 user
-  @ManyToOne(() => User, x => x.stdRoomId,{nullable: false})
+  @ManyToOne(() => User, x => x.stdRoomId, { nullable: false })
   @JoinColumn({ name: "user_id", referencedColumnName: "userId" })
   user: User;
 

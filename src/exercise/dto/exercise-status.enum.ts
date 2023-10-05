@@ -1,4 +1,4 @@
-export enum ExerciseStatus{
+export enum ExerciseStatus {
   OPEN = "OPEN",
   CLOSE = "CLOSE",
 }

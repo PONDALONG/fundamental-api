@@ -1,9 +1,9 @@
 import {
   Body,
-  Controller, FileTypeValidator,
+  Controller,
   Get,
   HttpCode,
-  HttpStatus, MaxFileSizeValidator, ParseFilePipe,
+  HttpStatus,
   Post,
   Query,
   UploadedFiles,
@@ -11,12 +11,16 @@ import {
 } from "@nestjs/common";
 import { CreateExercise } from "./dto/create-exercise";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { createWriteStream } from "fs";
-import { Constant } from "../utils/constant";
-import { AppUtils } from "../utils/app.utils";
+import { ExerciseService } from "./exercise.service";
+import { Res } from "../utils/Res";
 
 @Controller("exercise")
 export class ExerciseController {
+  private readonly response = new Res();
+  constructor(
+    private readonly service: ExerciseService
+  ) {
+  }
 
   @Post("create")
   @HttpCode(HttpStatus.OK)
@@ -25,8 +29,9 @@ export class ExerciseController {
   ]))
   async create(@UploadedFiles(
   ) files: Array<Express.Multer.File>, @Body() input: CreateExercise) {
-    //todo create
+    await this.service.create(files, input);
 
+    return this.response.ok()
   }
 
   @Get("find-by-room")

@@ -7,4 +7,5 @@ export class CreateExercise {
   exerciseStatus: ExerciseStatus;
   exerciseStartDate: Date;
   exerciseEndDate: Date;
+  roomId: number;
 }
