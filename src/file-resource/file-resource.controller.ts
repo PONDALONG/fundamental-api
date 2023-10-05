@@ -1,9 +1,10 @@
-import { Body, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Res, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { FileResourceService } from "./file-resource.service";
-import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { createWriteStream } from "fs";
 import { UploadRequest } from "./dto/upload-request.dto";
-import { Constant } from "../utils/constant";
+import type { Response } from "express";
+import { AppUtils } from "../utils/app.utils";
 
 @Controller("file-resource")
 export class FileResourceController {
@@ -26,19 +27,19 @@ export class FileResourceController {
     return true;
   }
 
-  @Post("upload-content")
-  @UseInterceptors(FileInterceptor("file"))
-  uploadContent(@UploadedFile() file?: Express.Multer.File, @Body() data?: UploadRequest) {
-
-    try {
-      const destinationPath = `${Constant.UPLOAD_PATH_CONTENT}/${file.originalname.replace(".", "-" + new Date().getTime().toString() + ".")}`;
-
-      createWriteStream(destinationPath).write(file.buffer);
-
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @Post("upload-content")
+  // @UseInterceptors(FileInterceptor("file"))
+  // uploadContent(@UploadedFile() file?: Express.Multer.File, @Body() data?: UploadRequest) {
+  //
+  //   try {
+  //     const destinationPath = `${Constant.UPLOAD_PATH_CONTENT}/${file.originalname.replace(".", "-" + new Date().getTime().toString() + ".")}`;
+  //
+  //     createWriteStream(destinationPath).write(file.buffer);
+  //
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   @Post("upload-exercise")
   @UseInterceptors(FileFieldsInterceptor([
@@ -46,6 +47,11 @@ export class FileResourceController {
   ]))
   uploadExercise(@UploadedFiles() files?: Array<Express.Multer.File>, @Body() data?: UploadRequest) {
 
+  }
+
+  @Get("download/:dir/:fileName")
+  download(@Res() res: Response, @Param("fileName") fileName: string, @Param("dir") dir: string) {
+    res.sendFile(fileName, { root: new AppUtils().findDir(dir) });
   }
 
 }

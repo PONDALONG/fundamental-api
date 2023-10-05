@@ -5,12 +5,15 @@ import * as csv from "csv-parser";
 import { Readable } from "stream";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
-import { LoginRequestDto } from "./dto/login-request.dto";
+import { LoginRequest } from "./dto/login.request";
 import { User } from "./entities/user.entity";
 import { UserRole } from "./dto/user-role.enum";
 import { UserToCsv } from "./dto/user-to-csv";
 import { UserAndCsv } from "./dto/user-and-csv";
 import { UserStatus } from "./dto/user-status.enum";
+import { createWriteStream } from "fs";
+import { Constant } from "../utils/constant";
+import { AppUtils } from "../utils/app.utils";
 
 @Injectable()
 export class UserService {
@@ -96,6 +99,20 @@ export class UserService {
     }
   }
 
+  async updateProfile(file: Express.Multer.File, user: User) {
+    try {
+
+      const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentCode}.${file.originalname.split(".").pop()}`;
+
+      createWriteStream(destinationPath).write(file.buffer);
+
+      user.image = new AppUtils().mapPathFile(destinationPath, Constant.UPLOAD_PATH_PROFILE, Constant.PROFILE_KEY);
+      return { image: (await this.repository.save(user)).image };
+    } catch (e) {
+      throw new BadRequestException("บันทึกข้อมูลผิดพลาด");
+    }
+  }
+
   findAll(): Promise<User[]> {
     return this.repository.createQueryBuilder("user").select(["user.userId", "user.role"]).getMany();
   }
@@ -111,7 +128,7 @@ export class UserService {
     return studentId;
   }
 
-  async login(req: LoginRequestDto) {
+  async login(req: LoginRequest) {
     try {
       const user = await this.repository.findOne({ where: { studentCode: req.studentId } });
 
@@ -148,23 +165,27 @@ export class UserService {
   }
 
   async checkUser(user: User) {
-    user = await this.repository.createQueryBuilder("user")
-      .select([
-        "user.userId",
-        "user.firstname",
-        "user.lastname",
-        "user.studentId",
-        "user.role",
-        "user.createDate"
-      ]).where(
-        "user.userId = :userId AND user.studentId = :studentId", user
-      )
-      .getOne();
-    if (!user) {
+    try {
+
+      user = await this.repository.createQueryBuilder("user")
+        .select([
+          "user.userId",
+          "user.firstname",
+          "user.lastname",
+          "user.studentCode",
+          "user.role",
+          "user.createDate"
+        ]).where(
+          "user.userId = :userId AND user.studentCode = :studentCode", user
+        )
+        .getOne();
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+      return user;
+    } catch (e) {
       throw new UnauthorizedException();
     }
-    delete user.password;
-    return user;
   }
 
   async findAdmin() {

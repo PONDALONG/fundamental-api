@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
 import { Room } from "../../room/entities/room.entity";
 import { FileResource } from "../../file-resource/entities/file-resource.entity";
+import { ExerciseStatus } from "../dto/exercise-status.enum";
 
 @Entity({ name: "exercise" })
 export class Exercise {
@@ -18,13 +19,13 @@ export class Exercise {
   @Column({ name: "exercise_score", nullable: false })
   exerciseScore: number;
 
-  @Column({ name: "exercise_status", nullable: false })
+  @Column({ name: "exercise_status", nullable: false, default: ExerciseStatus.CLOSE })
   exerciseStatus: string;
 
-  @Column({ name: "exercise_start_date", nullable: false })
+  @Column({ name: "exercise_start_date", nullable: true })
   exerciseStartDate: Date;
 
-  @Column({ name: "exercise_end_date", nullable: false })
+  @Column({ name: "exercise_end_date", nullable: true })
   exerciseEndDate: Date;
 
   //exercise 1-n student-exercise

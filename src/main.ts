@@ -4,7 +4,7 @@ import { json } from "express";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-   app.use(json({ limit: '15Mb' }))
+  app.use(json({ limit: "15Mb" }));
   await app.listen(3000);
 
 }

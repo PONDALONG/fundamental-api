@@ -2,11 +2,13 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpException,
   HttpStatus,
-  Param,
+  MaxFileSizeValidator,
+  ParseFilePipe,
   Post,
   Request,
   UploadedFile,
@@ -14,12 +16,11 @@ import {
   UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { LoginRequestDto } from "./dto/login-request.dto";
+import { LoginRequest } from "./dto/login.request";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
 import { Res } from "../utils/Res";
-import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -33,7 +34,7 @@ export class UserController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  async login(@Body() req: LoginRequestDto) {
+  async login(@Body() req: LoginRequest) {
     try {
       console.log(req);
       return await this.service.login(req);
@@ -54,5 +55,24 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async changePassword(@Request() auth: any, @Body() body: any) {
     //todo: change password
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("update-profile")
+  @UseInterceptors(FileInterceptor("file"))
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(@Request() auth: any, @UploadedFile(
+    new ParseFilePipe({
+      validators: [
+        new MaxFileSizeValidator({ maxSize: 1000 * 1000 * 5 }),
+        new FileTypeValidator({ fileType: "jpeg|png" })
+      ]
+    })
+  ) file?: Express.Multer.File) {
+    try {
+      return await this.service.updateProfile(file, auth.user);
+    } catch (e) {
+      throw e;
+    }
   }
 }

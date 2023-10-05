@@ -2,19 +2,19 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
+  MaxFileSizeValidator,
+  ParseFilePipe,
   Post,
   Query,
-  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
 import { StudentRoomService } from "./student-room.service";
-import { AuthGuard } from "../auth/auth.guard";
-import { User } from "../user/entities/user.entity";
 import { AdminGuard } from "../auth/admin.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { RoomCreateRequestDto } from "../room/dto/room-create-request.dto";
@@ -33,14 +33,21 @@ export class StudentRoomController {
   async findAll(@Query("roomId") roomId?: number) {
     //todo: find all
     //todo : find all by room
-    return roomId
+    return roomId;
   }
 
   @UseGuards(AdminGuard)
   @Post("import")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("file"))
-  async import(@UploadedFile() file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
+  async import(@UploadedFile(
+    new ParseFilePipe({
+      validators: [
+        new MaxFileSizeValidator({ maxSize: 1000 * 1000 * 5 }),
+        new FileTypeValidator({ fileType: "csv" })
+      ]
+    })
+  ) file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
     try {
       return await this.service.import(file, body.roomId);
     } catch (e) {

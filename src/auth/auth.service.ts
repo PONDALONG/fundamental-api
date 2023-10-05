@@ -14,7 +14,7 @@ export class AuthService {
       userId: user.userId,
       firstname: user.firstname,
       lastname: user.lastname,
-      studentId: user.studentCode,
+      studentCode: user.studentCode,
       role: user.role,
       createDate: user.createDate
     };

@@ -75,3 +75,4 @@ you'd like to join them, please [read more here](https://docs.nestjs.com/support
 Nest is [MIT licensed](LICENSE).
 
 nest g resource [name] --no-spec
+"postbuild": "node copy-folder.js"
