@@ -30,4 +30,8 @@ export class AppUtils {
   mapPathFile(dir: string, from: string, to: string) {
     return "/" + dir.replace(from, to);
   }
+
+  mapPathFileToDir(dir: string, from: string, to: string) {
+    return dir.replace(from, to);
+  }
 }
