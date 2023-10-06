@@ -5,6 +5,9 @@ import * as process from "process";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { JwtModule } from "@nestjs/jwt";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
+import { Constant } from "./utils/constant";
 
 @Module({
   imports: [
@@ -23,7 +26,11 @@ import { JwtModule } from "@nestjs/jwt";
       global: true,
       secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: "30d" }
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", Constant.PUBLIC_PATH)
     })
+
   ],
   controllers: [AppController, ...ImportControllers],
   providers: [AppService, ...ImportServices],

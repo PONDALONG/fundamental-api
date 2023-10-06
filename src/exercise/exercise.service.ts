@@ -15,16 +15,16 @@ import * as fs from "fs";
 
 @Injectable()
 export class ExerciseService {
+
   constructor(
-    @InjectRepository(Exercise)
-    private readonly repository: Repository<Exercise>,
-    @InjectRepository(Room)
-    private readonly roomRepository: Repository<Room>,
-    @InjectRepository(FileResource)
-    private readonly fileResourceRepository: Repository<FileResource>,
+    @InjectRepository(Exercise) private readonly repository: Repository<Exercise>,
+    @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
+    @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
     private dataSource: DataSource
   ) {
   }
+
+  /*------------------- MAIN FUNCTION -------------------*/
 
   async create(files: Array<Express.Multer.File>, input: CreateExercise) {
     const fileResponses: FileResult[] = [];
@@ -54,8 +54,8 @@ export class ExerciseService {
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
           const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
 
-          fs.createWriteStream(destinationPath).write(listFileElement.buffer);
-          fileResponses.push(new FileResult(listFileElement.originalname, new AppUtils().mapPathFile(destinationPath, Constant.UPLOAD_PATH_EXERCISE, Constant.EXERCISE_KEY)));
+          fs.createWriteStream(Constant.SAVE_PATH + destinationPath).write(listFileElement.buffer);
+          fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
 
         } catch (error) {
           saveFile = false;
@@ -130,8 +130,8 @@ export class ExerciseService {
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
           const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
 
-          fs.createWriteStream(destinationPath).write(listFileElement.buffer);
-          fileResponses.push(new FileResult(listFileElement.originalname, new AppUtils().mapPathFile(destinationPath, Constant.UPLOAD_PATH_EXERCISE, Constant.EXERCISE_KEY)));
+          fs.createWriteStream(Constant.SAVE_PATH + destinationPath).write(listFileElement.buffer);
+          fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
 
         } catch (error) {
           saveFile = false;
@@ -173,7 +173,9 @@ export class ExerciseService {
         const fileResources = await this.fileResourceRepository.find({
           where: {
             fileResourceId: In(strings),
-            exercise: exerciseSave
+            exercise: {
+              exerciseId: exercise.exerciseId
+            }
           }
         });
 
@@ -184,14 +186,17 @@ export class ExerciseService {
         for (const fileResource of fileResources) {
           try {
 
-            const directoryPath = new AppUtils().mapPathFileToDir(fileResource.fileResourcePath, "/" + Constant.EXERCISE_KEY, Constant.UPLOAD_PATH_EXERCISE);
+            const directoryPath = Constant.SAVE_PATH + fileResource.fileResourcePath;
             fs.accessSync(directoryPath, fs.constants.F_OK);
             fs.unlinkSync(directoryPath);
 
           } catch (error) {
-            // ignore
-            if (error.code === "ENOENT")
+
+            if (error.code === "ENOENT") {
+              console.error("file not found. : " + fileResource.fileResourcePath);
+            } else {
               console.error(error.message);
+            }
           }
         }
       }
@@ -205,6 +210,33 @@ export class ExerciseService {
     }
 
   }
+
+  async findAll(roomId?: number) {
+    let result: Exercise[] = [];
+    try {
+      if (!!roomId) {
+        result = await this.repository.createQueryBuilder("exercise")
+          .innerJoin("exercise.room", "rm")
+          .leftJoinAndSelect("exercise.fileResources", "f")
+          .where("rm.roomId = :roomId", { roomId })
+          .select(["exercise", "f", "rm.roomId", "rm.roomName"])
+          .getMany();
+      } else {
+        result = await this.repository.createQueryBuilder("exercise")
+          .innerJoin("exercise.room", "rm")
+          .leftJoinAndSelect("exercise.fileResources", "f")
+          .select(["exercise", "f", "rm.roomId", "rm.roomName"])
+          .getMany();
+      }
+      if (result.length == 0) throw new BadRequestException("ไม่พบข้อมูล");
+      return result;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+
+  /*------------------- SUB FUNCTION -------------------*/
 
   private validateCreateInput(input: CreateExercise) {
     const errors: string[] = [];

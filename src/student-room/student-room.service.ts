@@ -20,6 +20,8 @@ export class StudentRoomService {
   ) {
   }
 
+  /*------------------- MAIN FUNCTION -------------------*/
+
   async import(file: Express.Multer.File, roomId: number) {
 
     try {
@@ -63,15 +65,12 @@ export class StudentRoomService {
     }
   }
 
-  async findAllByUser(user: User) {
-    return await this.repository.find(
-      {
-        where: {
-          user: user
-        }
-      }
-    );
+  async update(input: any) {
+
   }
+
+
+  /*------------------- SUB FUNCTION -------------------*/
 
   async findByUser(user: User) {
     return await this.repository.findOne(
@@ -82,15 +81,4 @@ export class StudentRoomService {
       });
   }
 
-  async update(input: any) {
-
-  }
-
-  async findById(id: number) {
-    return await this.repository.findOne({
-      where: {
-        stdRoomId: id
-      }
-    });
-  }
 }

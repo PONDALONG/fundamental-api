@@ -2,13 +2,10 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Query,
-  Res,
   UploadedFiles,
   UseInterceptors
 } from "@nestjs/common";
@@ -16,8 +13,6 @@ import { FileResourceService } from "./file-resource.service";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { createWriteStream } from "fs";
 import { UploadRequest } from "./dto/upload-request.dto";
-import type { Response } from "express";
-import { AppUtils } from "../utils/app.utils";
 
 @Controller("file-resource")
 export class FileResourceController {
@@ -62,10 +57,10 @@ export class FileResourceController {
 
   }
 
-  @Get("download/:dir/:fileName")
-  download(@Res() res: Response, @Param("fileName") fileName: string, @Param("dir") dir: string) {
-    res.sendFile(fileName, { root: new AppUtils().findDir(dir) });
-  }
+  // @Get("download/:dir/:fileName")
+  // download(@Res() res: Response, @Param("fileName") fileName: string, @Param("dir") dir: string) {
+  //   res.sendFile(fileName, { root: new AppUtils().findDir(dir) });
+  // }
 
   @Delete("delete")
   @HttpCode(HttpStatus.OK)

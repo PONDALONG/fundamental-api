@@ -13,7 +13,6 @@ import { UserAndCsv } from "./dto/user-and-csv";
 import { UserStatus } from "./dto/user-status.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
-import { AppUtils } from "../utils/app.utils";
 
 @Injectable()
 export class UserService {
@@ -26,6 +25,8 @@ export class UserService {
   ) {
     this.createAdmin().then();
   }
+
+  /*------------------- MAIN FUNCTION -------------------*/
 
   async imports(file: Express.Multer.File) {
     console.log(file);
@@ -104,28 +105,13 @@ export class UserService {
 
       const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentCode}.${file.originalname.split(".").pop()}`;
 
-      createWriteStream(destinationPath).write(file.buffer);
+      createWriteStream(Constant.SAVE_PATH + destinationPath).write(file.buffer);
 
-      user.image = new AppUtils().mapPathFile(destinationPath, Constant.UPLOAD_PATH_PROFILE, Constant.PROFILE_KEY);
+      user.image = destinationPath;
       return { image: (await this.repository.save(user)).image };
     } catch (e) {
       throw new BadRequestException("บันทึกข้อมูลผิดพลาด");
     }
-  }
-
-  findAll(): Promise<User[]> {
-    return this.repository.createQueryBuilder("user").select(["user.userId", "user.role"]).getMany();
-  }
-
-  async findAllStudentId() {
-    const users = await this.repository.createQueryBuilder("user").select(["user.studentId"]).getMany();
-    const studentId: string[] = [];
-
-    for (let user of users) {
-      studentId.push(user.studentCode);
-    }
-
-    return studentId;
   }
 
   async login(req: LoginRequest) {
@@ -148,7 +134,11 @@ export class UserService {
     }
   }
 
-  async createAdmin() {
+
+
+  /*------------------- SUB FUNCTION -------------------*/
+
+  private async createAdmin() {
     try {
       let check = await this.findAdmin();
       if (check) return;
@@ -161,6 +151,41 @@ export class UserService {
       await this.repository.save(user);
     } catch (e) {
       console.error("createAdmin error : " + e.message);
+    }
+  }
+
+  async findOne(id: number) {
+    return await this.repository.findOne({ where: { userId: id } });
+  }
+
+  async findOneByStudentId(studentId: string) {
+    return await this.repository.findOne({ where: { studentCode: studentId } });
+  }
+
+  private mapUserToImports(data: User): User {
+    console.log(data);
+    const user = new User();
+    user.firstname = data.firstname;
+    user.lastname = data.lastname;
+    user.studentCode = data.studentCode;
+    user.class = data.class;
+    return user;
+  }
+
+  private validateUser(user: User): void {
+    const errors: string[] = [];
+    if (!user.firstname || user.firstname.trim() == "") {
+      errors.push("firstname");
+    }
+    if (!user.lastname || user.lastname.trim() == "") {
+      errors.push("lastname");
+    }
+    if (!user.studentCode || user.studentCode.trim() == "") {
+      errors.push("studentCode");
+    }
+
+    if (errors.length > 0) {
+      throw new Error("กรุณาระบุ : " + errors.join(", "));
     }
   }
 
@@ -198,40 +223,5 @@ export class UserService {
 
   async compare(pwd: string, hash: string) {
     return await bcrypt.compare(pwd, hash);
-  }
-
-  async findOne(id: number) {
-    return await this.repository.findOne({ where: { userId: id } });
-  }
-
-  async findOneByStudentId(studentId: string) {
-    return await this.repository.findOne({ where: { studentCode: studentId } });
-  }
-
-  private mapUserToImports(data: User): User {
-    console.log(data);
-    const user = new User();
-    user.firstname = data.firstname;
-    user.lastname = data.lastname;
-    user.studentCode = data.studentCode;
-    user.class = data.class;
-    return user;
-  }
-
-  private validateUser(user: User): void {
-    const errors: string[] = [];
-    if (!user.firstname || user.firstname.trim() == "") {
-      errors.push("firstname");
-    }
-    if (!user.lastname || user.lastname.trim() == "") {
-      errors.push("lastname");
-    }
-    if (!user.studentCode || user.studentCode.trim() == "") {
-      errors.push("studentCode");
-    }
-
-    if (errors.length > 0) {
-      throw new Error("กรุณาระบุ : " + errors.join(", "));
-    }
   }
 }

@@ -36,6 +36,8 @@ export class RoomService {
     }
   }
 
+  /*------------------- MAIN FUNCTION -------------------*/
+
   async checkDuplicateRoom(input: RoomCreateRequestDto) {
     try {
       const room = await this.repository.findOne({
@@ -89,6 +91,9 @@ export class RoomService {
       }
     );
   }
+
+
+  /*------------------- SUB FUNCTION -------------------*/
 
   private validateRoom(data: RoomCreateRequestDto) {
     const errors: string[] = [];

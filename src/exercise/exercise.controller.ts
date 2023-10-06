@@ -45,11 +45,13 @@ export class ExerciseController {
     return this.response.ok();
   }
 
-  @Get("find-by-room")
+  @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findByRoom(@Query("roomId") roomId: number) {
-    return roomId;
+    // return roomId;
     //todo find by room
+    const exercises = await this.service.findAll(roomId);
+    return exercises;
   }
 
 }

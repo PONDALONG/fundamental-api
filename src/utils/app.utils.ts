@@ -1,19 +1,16 @@
-import { Constant } from "./constant";
-import { BadRequestException } from "@nestjs/common";
-
 export class AppUtils {
-  public findDir(dir: string): string {
-    switch (dir) {
-      case Constant.EXERCISE_KEY:
-        return Constant.UPLOAD_PATH_EXERCISE;
-      case Constant.STUDENT_EXERCISE_KEY:
-        return Constant.UPLOAD_PATH_STUDENT_EXERCISE;
-      case Constant.PROFILE_KEY:
-        return Constant.UPLOAD_PATH_PROFILE;
-      default:
-        throw new BadRequestException("File not found");
-    }
-  }
+  // public findDir(dir: string): string {
+  //   switch (dir) {
+  //     case Constant.EXERCISE_KEY:
+  //       return Constant.UPLOAD_PATH_EXERCISE;
+  //     case Constant.STUDENT_EXERCISE_KEY:
+  //       return Constant.UPLOAD_PATH_STUDENT_EXERCISE;
+  //     case Constant.PROFILE_KEY:
+  //       return Constant.UPLOAD_PATH_PROFILE;
+  //     default:
+  //       throw new BadRequestException("File not found");
+  //   }
+  // }
 
   generateRandomString(length: number): string {
     const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
