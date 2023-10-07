@@ -7,9 +7,9 @@ import { RoomService } from "../room/room.service";
 import { UserService } from "../user/user.service";
 import { Room } from "../room/entities/room.entity";
 import { UserAndCsv } from "../user/dto/user-and-csv";
-import { StdRoomStatus } from "./entities/std-room-status.enum";
 import { Exercise } from "../exercise/entities/exercise.entity";
 import { StudentExercise } from "../student-exercise/entities/student-exercise.entity";
+import { StdRoomStatus } from "./dto/std-room.enum";
 
 @Injectable()
 export class StudentRoomService {

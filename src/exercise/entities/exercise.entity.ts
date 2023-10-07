@@ -25,7 +25,7 @@ export class Exercise {
   @Column({ name: "exercise_type", nullable: false })
   exerciseType: ExerciseType;
 
-  @Column({ name: "exercise_start_date", nullable: false,type:"timestamp",default: () => "CURRENT_TIMESTAMP" })
+  @Column({ name: "exercise_start_date", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   exerciseStartDate: Date;
 
   @Column({ name: "exercise_end_date", nullable: true })

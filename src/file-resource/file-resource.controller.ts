@@ -1,18 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Query,
-  UploadedFiles,
-  UseInterceptors
-} from "@nestjs/common";
+import { Controller, Delete, HttpCode, HttpStatus, Post, Query, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { FileResourceService } from "./file-resource.service";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { createWriteStream } from "fs";
-import { UploadRequest } from "./dto/upload-request.dto";
 
 @Controller("file-resource")
 export class FileResourceController {
@@ -49,13 +38,13 @@ export class FileResourceController {
   //   }
   // }
 
-  @Post("upload-exercise")
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: "files" }
-  ]))
-  uploadExercise(@UploadedFiles() files?: Array<Express.Multer.File>, @Body() data?: UploadRequest) {
-
-  }
+  // @Post("upload-exercise")
+  // @UseInterceptors(FileFieldsInterceptor([
+  //   { name: "files" }
+  // ]))
+  // uploadExercise(@UploadedFiles() files?: Array<Express.Multer.File>, @Body() data?: UploadRequest) {
+  //
+  // }
 
   // @Get("download/:dir/:fileName")
   // download(@Res() res: Response, @Param("fileName") fileName: string, @Param("dir") dir: string) {

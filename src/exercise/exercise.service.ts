@@ -74,10 +74,10 @@ export class ExerciseService {
 
     // save exercise
     const exercise = new Exercise();
-    exercise.exerciseName = input.exerciseName;
-    exercise.exerciseDescription = input.exerciseDescription;
+    exercise.exerciseName = input.exerciseName.trim();
+    exercise.exerciseDescription = input.exerciseDescription.trim();
     exercise.exerciseScore = input.exerciseScore;
-    exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
+    exercise.exerciseStatus = input.exerciseStatus;
     exercise.exerciseEndDate = input.exerciseEndDate;
     exercise.exerciseType = input.exerciseType;
     exercise.room = room;
@@ -154,10 +154,10 @@ export class ExerciseService {
     if (!saveFile) throw new BadRequestException("บันทึกไฟล์ไม่สำเร็จ : " + msgFileError);
 
     // save exercise
-    exercise.exerciseName = input.exerciseName;
-    exercise.exerciseDescription = input.exerciseDescription;
+    exercise.exerciseName = input.exerciseName.trim();
+    exercise.exerciseDescription = input.exerciseDescription.trim();
     exercise.exerciseScore = input.exerciseScore;
-    exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
+    exercise.exerciseStatus = input.exerciseStatus;
     exercise.exerciseEndDate = input.exerciseEndDate;
     exercise.exerciseType = input.exerciseType;
 

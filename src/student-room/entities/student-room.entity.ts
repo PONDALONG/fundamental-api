@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Room } from "../../room/entities/room.entity";
 import { User } from "../../user/entities/user.entity";
-import { StdRoomStatus } from "./std-room-status.enum";
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
+import { StdRoomStatus } from "../dto/std-room.enum";
 
 @Entity({ name: "std_room" })
 export class StudentRoom {
