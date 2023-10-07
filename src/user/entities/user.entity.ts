@@ -1,8 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { UserRole } from "../dto/user-role.enum";
 import { Exclude } from "class-transformer";
 import { StudentRoom } from "../../student-room/entities/student-room.entity";
-import { UserStatus } from "../dto/user-status.enum";
+import { UserRole, UserStatus } from "../dto/user.enum";
 
 @Entity()
 export class User {

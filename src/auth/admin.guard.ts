@@ -2,8 +2,8 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { UserService } from "../user/user.service";
-import { UserRole } from "../user/dto/user-role.enum";
 import * as process from "process";
+import { UserRole } from "../user/dto/user.enum";
 
 @Injectable()
 export class AdminGuard implements CanActivate {

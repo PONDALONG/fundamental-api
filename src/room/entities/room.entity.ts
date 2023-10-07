@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { RoomStatus } from "../dto/room-status.enum";
+import { RoomStatus } from "../dto/room.enum";
 import { Exercise } from "../../exercise/entities/exercise.entity";
 import { StudentRoom } from "../../student-room/entities/student-room.entity";
 

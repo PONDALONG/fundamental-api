@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateExercise } from "./dto/create-exercise";
+import { CreateExerciseRequest } from "./dto/create-exercise-request";
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
 import { Exercise } from "./entities/exercise.entity";
@@ -31,7 +31,7 @@ export class ExerciseService {
 
   /*------------------- MAIN FUNCTION -------------------*/
 
-  async create(files: Array<Express.Multer.File>, input: CreateExercise) {
+  async create(files: Array<Express.Multer.File>, input: CreateExerciseRequest) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
@@ -246,7 +246,7 @@ export class ExerciseService {
 
   /*------------------- SUB FUNCTION -------------------*/
 
-  private validateCreateInput(input: CreateExercise) {
+  private validateCreateInput(input: CreateExerciseRequest) {
     let errors: string[] = [];
     const msgErrors: string[] = [];
 

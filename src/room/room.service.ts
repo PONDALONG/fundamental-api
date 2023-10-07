@@ -5,7 +5,7 @@ import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { StdRoomStatus } from "../student-room/entities/std-room-status.enum";
-import { RoomStatus } from "./dto/room-status.enum";
+import { RoomStatus } from "./dto/room.enum";
 
 @Injectable()
 export class RoomService {

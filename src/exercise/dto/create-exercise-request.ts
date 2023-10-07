@@ -1,15 +1,16 @@
 import { ExerciseStatus, ExerciseType } from "./exercise.enum";
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsNumberString, ValidateIf } from "class-validator";
+import { IsDateString, IsEnum, IsNotEmpty, IsNumberString } from "class-validator";
+import { IsBlankNull } from "../../utils/custom-validator";
 
-export class CreateExercise {
+export class CreateExerciseRequest {
 
-  @IsNotEmpty()
+  @IsBlankNull()
   exerciseName: string;
 
-  @IsNotEmpty()
+  @IsBlankNull()
   exerciseDescription: string;
 
-  @IsNotEmpty()
+  @IsNumberString()
   exerciseScore: number;
 
   @IsEnum(ExerciseStatus)

@@ -10,7 +10,7 @@ import {
   UploadedFiles,
   UseInterceptors
 } from "@nestjs/common";
-import { CreateExercise } from "./dto/create-exercise";
+import { CreateExerciseRequest } from "./dto/create-exercise-request";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ExerciseService } from "./exercise.service";
 import { Res } from "../utils/Res";
@@ -31,7 +31,7 @@ export class ExerciseController {
     { name: "files" }
   ]))
   async create(@UploadedFiles(
-  ) files: Array<Express.Multer.File>, @Body() input: CreateExercise) {
+  ) files: Array<Express.Multer.File>, @Body() input: CreateExerciseRequest) {
     await this.service.create(files, input);
     return this.response.ok();
   }
