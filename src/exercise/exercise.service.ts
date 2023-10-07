@@ -38,7 +38,7 @@ export class ExerciseService {
     let listFile: Express.Multer.File[] = null;
 
     // validate input
-    this.validateCreateInput(input);
+    // this.validateCreateInput(input);
 
     const room = await this.roomRepository.findOne({
       where: {
@@ -78,7 +78,6 @@ export class ExerciseService {
     exercise.exerciseDescription = input.exerciseDescription;
     exercise.exerciseScore = input.exerciseScore;
     exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
-    exercise.exerciseStartDate = input.exerciseStartDate;
     exercise.exerciseEndDate = input.exerciseEndDate;
     exercise.exerciseType = input.exerciseType;
     exercise.room = room;
@@ -127,7 +126,7 @@ export class ExerciseService {
     if (!exercise) throw new BadRequestException("ไม่พบข้อมูล");
 
     // validate input
-    this.validateUpdateInput(input);
+    // this.validateUpdateInput(input);
 
     if (!!files["files"]) {
 
@@ -159,7 +158,6 @@ export class ExerciseService {
     exercise.exerciseDescription = input.exerciseDescription;
     exercise.exerciseScore = input.exerciseScore;
     exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
-    exercise.exerciseStartDate = input.exerciseStartDate;
     exercise.exerciseEndDate = input.exerciseEndDate;
     exercise.exerciseType = input.exerciseType;
 

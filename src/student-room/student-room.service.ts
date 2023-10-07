@@ -66,37 +66,33 @@ export class StudentRoomService {
             res.userToCsv[i].status = false;
           }
         }
+        try {
 
-        const exercises = await this.exerciseRepository.find({
-          where: {
-            room: room
-          }
-        });
+          const exercises = await this.exerciseRepository.find({ where: { room: room } });
 
-        const studentExercises: StudentExercise[] = [];
-
-        for (const exec of exercises) {
-          for (const stud of studentRooms) {
-            const exist = await this.studentExerciseRepository.exist(
-              {
-                where: {
-                  exercise: exec,
-                  studentRoom: stud
+          const studentExercises: StudentExercise[] = [];
+          for (const exec of exercises) {
+            for (const stud of studentRooms) {
+              const exist = await this.studentExerciseRepository.exist(
+                {
+                  where: {
+                    exercise: exec,
+                    studentRoom: stud
+                  }
                 }
+              );
+              if (!exist) {
+                const studentExercise = new StudentExercise();
+                studentExercise.exercise = exec;
+                studentExercise.studentRoom = stud;
+                studentExercises.push(studentExercise);
               }
-            );
-            if (!exist) {
-              const studentExercise = new StudentExercise();
-              studentExercise.exercise = exec;
-              studentExercise.studentRoom = stud;
-              studentExercises.push(studentExercise);
             }
-
           }
+          await this.studentExerciseRepository.save(studentExercises);
+        } catch (e) {
+          console.error(e.message);
         }
-
-        await this.studentExerciseRepository.save(studentExercises);
-
       }
       return res.userToCsv;
     } catch (e) {
