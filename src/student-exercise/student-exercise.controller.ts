@@ -1,4 +1,5 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
@@ -12,10 +13,15 @@ import {
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { StudentExerciseService } from "./student-exercise.service";
+import { FormIntoGroups } from "./dto/form-into-groups-request";
+import { CheckStdExercise } from "./dto/check-std-exercise-request";
+import { Res } from "../utils/Res";
 
 @Controller("student-exercise")
 @UseInterceptors(ClassSerializerInterceptor)
 export class StudentExerciseController {
+
+  private readonly response = new Res();
 
   constructor(
     private readonly service: StudentExerciseService
@@ -37,9 +43,17 @@ export class StudentExerciseController {
   }
 
   @UseGuards(AdminGuard)
-  @Post("give-score-by-student-exercise")
+  @Post("check-exercise")
   @HttpCode(HttpStatus.OK)
-  async checkExerciseByStudent() {
-    //todo send checkExerciseByStudent
+  async checkExercise(@Body() input: CheckStdExercise) {
+    await this.service.checkExercise(input);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post("form-into-groups")
+  @HttpCode(HttpStatus.OK)
+  async formIntoGroups(@Body() input: FormIntoGroups) {
+    await this.service.formIntoGroups(input);
+    return this.response.ok();
   }
 }
