@@ -21,7 +21,6 @@ export class RoomService {
       this.validateRoom(input);
       await this.checkDuplicateRoom(input);
       const room = new Room();
-      room.roomName = input.roomName.trim();
       room.roomDescription = input.roomDescription.trim();
       room.roomYear = input.roomYear;
       room.roomGroup = input.roomGroup.trim();
@@ -42,7 +41,6 @@ export class RoomService {
     try {
       const room = await this.repository.findOne({
         where: {
-          roomName: input.roomName.trim(),
           roomYear: input.roomYear,
           roomGroup: input.roomGroup.trim(),
           roomTerm: input.roomTerm
@@ -92,14 +90,25 @@ export class RoomService {
     );
   }
 
+  async findAllGroup() {
+    return await this.repository.createQueryBuilder("room").select(["room.roomGroup"]).groupBy("room.roomGroup").getMany();
+  }
+
+  async findAllYearByGroup(roomGroup: string) {
+    return await this.repository.createQueryBuilder("room").select(["room.roomYear"]).where("room.roomGroup = :roomGroup", { roomGroup: roomGroup }).groupBy("room.roomYear").getMany();
+  }
+
+  async findAllTermByGroupAndYear(roomGroup: string, roomYear: number) {
+    return await this.repository.createQueryBuilder("room").select(["room.roomTerm"]).where("room.roomGroup = :roomGroup AND room.roomYear = :roomYear", {
+      roomGroup: roomGroup,
+      roomYear: roomYear
+    }).groupBy("room.roomTerm").getMany();
+  }
 
   /*------------------- SUB FUNCTION -------------------*/
 
   private validateRoom(data: RoomCreateRequestDto) {
     const errors: string[] = [];
-    if (!data.roomName || data.roomName.trim() == "") {
-      errors.push("roomName");
-    }
     if (!data.roomDescription || data.roomDescription.trim() == "") {
       errors.push("roomDescription");
     }

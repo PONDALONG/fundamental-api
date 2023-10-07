@@ -81,4 +81,17 @@ export class StudentRoomService {
       });
   }
 
+  async findAllByRom(room: Room) {
+    {
+      try {
+        return await this.repository.find({
+          where: {
+            room: room
+          }
+        });
+      } catch (e) {
+        throw e;
+      }
+    }
+  }
 }

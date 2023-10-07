@@ -9,9 +9,6 @@ export class Room {
   @PrimaryGeneratedColumn({ name: "room_id" })
   roomId: number;
 
-  @Column({ name: "room_name", nullable: false }) //unique
-  roomName: string;
-
   @Column({ name: "room_year", nullable: false }) //unique
   roomYear: number;
 

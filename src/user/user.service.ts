@@ -13,6 +13,7 @@ import { UserAndCsv } from "./dto/user-and-csv";
 import { UserStatus } from "./dto/user-status.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
+import * as path from "path";
 
 @Injectable()
 export class UserService {
@@ -105,7 +106,7 @@ export class UserService {
 
       const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentCode}.${file.originalname.split(".").pop()}`;
 
-      createWriteStream(Constant.SAVE_PATH + destinationPath).write(file.buffer);
+      createWriteStream(path.resolve(destinationPath)).write(file.buffer);
 
       user.image = destinationPath;
       return { image: (await this.repository.save(user)).image };
@@ -135,24 +136,7 @@ export class UserService {
   }
 
 
-
   /*------------------- SUB FUNCTION -------------------*/
-
-  private async createAdmin() {
-    try {
-      let check = await this.findAdmin();
-      if (check) return;
-      const user = new User();
-      user.firstname = "admin";
-      user.lastname = "admin";
-      user.studentCode = "admin";
-      user.password = this.encode("admin" + "Ab*");
-      user.role = UserRole.TEACHER;
-      await this.repository.save(user);
-    } catch (e) {
-      console.error("createAdmin error : " + e.message);
-    }
-  }
 
   async findOne(id: number) {
     return await this.repository.findOne({ where: { userId: id } });
@@ -160,33 +144,6 @@ export class UserService {
 
   async findOneByStudentId(studentId: string) {
     return await this.repository.findOne({ where: { studentCode: studentId } });
-  }
-
-  private mapUserToImports(data: User): User {
-    console.log(data);
-    const user = new User();
-    user.firstname = data.firstname;
-    user.lastname = data.lastname;
-    user.studentCode = data.studentCode;
-    user.class = data.class;
-    return user;
-  }
-
-  private validateUser(user: User): void {
-    const errors: string[] = [];
-    if (!user.firstname || user.firstname.trim() == "") {
-      errors.push("firstname");
-    }
-    if (!user.lastname || user.lastname.trim() == "") {
-      errors.push("lastname");
-    }
-    if (!user.studentCode || user.studentCode.trim() == "") {
-      errors.push("studentCode");
-    }
-
-    if (errors.length > 0) {
-      throw new Error("กรุณาระบุ : " + errors.join(", "));
-    }
   }
 
   async checkUser(user: User) {
@@ -223,5 +180,48 @@ export class UserService {
 
   async compare(pwd: string, hash: string) {
     return await bcrypt.compare(pwd, hash);
+  }
+
+  private async createAdmin() {
+    try {
+      let check = await this.findAdmin();
+      if (check) return;
+      const user = new User();
+      user.firstname = "admin";
+      user.lastname = "admin";
+      user.studentCode = "admin";
+      user.password = this.encode("admin" + "Ab*");
+      user.role = UserRole.TEACHER;
+      await this.repository.save(user);
+    } catch (e) {
+      console.error("createAdmin error : " + e.message);
+    }
+  }
+
+  private mapUserToImports(data: User): User {
+    console.log(data);
+    const user = new User();
+    user.firstname = data.firstname;
+    user.lastname = data.lastname;
+    user.studentCode = data.studentCode;
+    user.class = data.class;
+    return user;
+  }
+
+  private validateUser(user: User): void {
+    const errors: string[] = [];
+    if (!user.firstname || user.firstname.trim() == "") {
+      errors.push("firstname");
+    }
+    if (!user.lastname || user.lastname.trim() == "") {
+      errors.push("lastname");
+    }
+    if (!user.studentCode || user.studentCode.trim() == "") {
+      errors.push("studentCode");
+    }
+
+    if (errors.length > 0) {
+      throw new Error("กรุณาระบุ : " + errors.join(", "));
+    }
   }
 }

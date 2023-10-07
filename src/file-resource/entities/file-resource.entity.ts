@@ -19,7 +19,7 @@ export class FileResource {
   fileResourceType: FileResourceType;
 
   // file resource n - 1 student exercise
-  @ManyToOne(() => StudentExercise, x => x.fileResources, { nullable: true })
+  @ManyToOne(() => StudentExercise, x => x.fileResources, { nullable: true, onDelete: "CASCADE" })
   @JoinColumn({ name: "std_exec_id", referencedColumnName: "stdExecId" })
   stdExercises: StudentExercise;
 

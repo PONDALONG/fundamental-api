@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
 import { Room } from "../../room/entities/room.entity";
 import { FileResource } from "../../file-resource/entities/file-resource.entity";
-import { ExerciseStatus } from "../dto/exercise-status.enum";
+import { ExerciseStatus, ExerciseType } from "../dto/exercise.enum";
 
 @Entity({ name: "exercise" })
 export class Exercise {
@@ -22,6 +22,9 @@ export class Exercise {
   @Column({ name: "exercise_status", nullable: false, default: ExerciseStatus.CLOSE })
   exerciseStatus: string;
 
+  @Column({ name: "exercise_type", nullable: false })
+  exerciseType: ExerciseType;
+
   @Column({ name: "exercise_start_date", nullable: true })
   exerciseStartDate: Date;
 
@@ -29,7 +32,7 @@ export class Exercise {
   exerciseEndDate: Date;
 
   //exercise 1-n student-exercise
-  @OneToMany(() => StudentExercise, x => x.exercise)
+  @OneToMany(() => StudentExercise, x => x.exercise, { onDelete: "CASCADE" })
   stdExercises: StudentExercise[];
 
   //exercise n-1 room

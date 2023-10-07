@@ -3,7 +3,7 @@ import { CreateExercise } from "./dto/create-exercise";
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
 import { Exercise } from "./entities/exercise.entity";
-import { ExerciseStatus } from "./dto/exercise-status.enum";
+import { ExerciseStatus, ExerciseType } from "./dto/exercise.enum";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 import { Room } from "../room/entities/room.entity";
@@ -12,6 +12,9 @@ import { FileResourceType } from "../file-resource/entities/file-resource-type.e
 import { FileResult } from "../file-resource/dto/file-result";
 import { UpdateExercise } from "./dto/update-exercise";
 import * as fs from "fs";
+import * as path from "path";
+import { StudentRoomService } from "../student-room/student-room.service";
+import { StudentExerciseService } from "../student-exercise/student-exercise.service";
 
 @Injectable()
 export class ExerciseService {
@@ -20,7 +23,9 @@ export class ExerciseService {
     @InjectRepository(Exercise) private readonly repository: Repository<Exercise>,
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
-    private dataSource: DataSource
+    private dataSource: DataSource,
+    private readonly studentRoomService: StudentRoomService,
+    private readonly studentExerciseService: StudentExerciseService
   ) {
   }
 
@@ -54,7 +59,7 @@ export class ExerciseService {
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
           const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
 
-          fs.createWriteStream(Constant.SAVE_PATH + destinationPath).write(listFileElement.buffer);
+          fs.createWriteStream(path.resolve(Constant.PUBLIC_PATH + destinationPath)).write(listFileElement.buffer);
           fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
 
         } catch (error) {
@@ -75,6 +80,7 @@ export class ExerciseService {
     exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
     exercise.exerciseStartDate = input.exerciseStartDate;
     exercise.exerciseEndDate = input.exerciseEndDate;
+    exercise.exerciseType = input.exerciseType;
     exercise.room = room;
 
     const db = this.dataSource.createQueryRunner();
@@ -92,6 +98,10 @@ export class ExerciseService {
         fileResource.fileResourceType = FileResourceType.EXERCISE;
         await db.manager.save(fileResource);
       }
+      const studentRooms = await this.studentRoomService.findAllByRom(room);
+      const studentExercises = this.studentExerciseService.autoGenerate(exerciseSave, studentRooms);
+
+      await db.manager.save(studentExercises);
 
       await db.commitTransaction();
     } catch (err) {
@@ -130,7 +140,7 @@ export class ExerciseService {
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
           const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
 
-          fs.createWriteStream(Constant.SAVE_PATH + destinationPath).write(listFileElement.buffer);
+          fs.createWriteStream(path.resolve(Constant.PUBLIC_PATH + destinationPath)).write(listFileElement.buffer);
           fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
 
         } catch (error) {
@@ -151,6 +161,7 @@ export class ExerciseService {
     exercise.exerciseStatus = input.exerciseStatus === ExerciseStatus.OPEN ? ExerciseStatus.OPEN : ExerciseStatus.CLOSE;
     exercise.exerciseStartDate = input.exerciseStartDate;
     exercise.exerciseEndDate = input.exerciseEndDate;
+    exercise.exerciseType = input.exerciseType;
 
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -168,11 +179,10 @@ export class ExerciseService {
         await queryRunner.manager.save(fileResource);
       }
 
-      if (!!input.deleteFileIds) {
-        const strings = input.deleteFileIds.toString().split(",");
+      if (JSON.parse(input.deleteFileIds).length > 0) {
         const fileResources = await this.fileResourceRepository.find({
           where: {
-            fileResourceId: In(strings),
+            fileResourceId: In(JSON.parse(input.deleteFileIds)),
             exercise: {
               exerciseId: exercise.exerciseId
             }
@@ -186,7 +196,7 @@ export class ExerciseService {
         for (const fileResource of fileResources) {
           try {
 
-            const directoryPath = Constant.SAVE_PATH + fileResource.fileResourcePath;
+            const directoryPath = path.resolve(Constant.PUBLIC_PATH + fileResource.fileResourcePath);
             fs.accessSync(directoryPath, fs.constants.F_OK);
             fs.unlinkSync(directoryPath);
 
@@ -211,35 +221,36 @@ export class ExerciseService {
 
   }
 
-  async findAll(roomId?: number) {
+  async findAll(roomYear: number, roomGroup: string, roomTerm: number) {
+
     let result: Exercise[] = [];
+
     try {
-      if (!!roomId) {
-        result = await this.repository.createQueryBuilder("exercise")
-          .innerJoin("exercise.room", "rm")
-          .leftJoinAndSelect("exercise.fileResources", "f")
-          .where("rm.roomId = :roomId", { roomId })
-          .select(["exercise", "f", "rm.roomId", "rm.roomName"])
-          .getMany();
-      } else {
-        result = await this.repository.createQueryBuilder("exercise")
-          .innerJoin("exercise.room", "rm")
-          .leftJoinAndSelect("exercise.fileResources", "f")
-          .select(["exercise", "f", "rm.roomId", "rm.roomName"])
-          .getMany();
-      }
-      if (result.length == 0) throw new BadRequestException("ไม่พบข้อมูล");
-      return result;
+      roomYear = roomYear || 0;
+      roomTerm = roomTerm || 0;
+      roomGroup = roomGroup || "";
+
+      result = await this.repository.createQueryBuilder("exercise")
+        .innerJoin("exercise.room", "rm")
+        .leftJoinAndSelect("exercise.fileResources", "file")
+        .where("rm.roomYear = :roomYear AND rm.roomGroup = :roomGroup AND rm.roomTerm = :roomTerm",
+          { roomYear, roomGroup, roomTerm }
+        )
+        .select(["exercise", "file", "rm.roomId", "rm.roomGroup", "rm.roomYear", "rm.roomTerm"])
+        .getMany();
     } catch (e) {
       throw new BadRequestException(e.message);
     }
+
+    return result;
   }
 
 
   /*------------------- SUB FUNCTION -------------------*/
 
   private validateCreateInput(input: CreateExercise) {
-    const errors: string[] = [];
+    let errors: string[] = [];
+    const msgErrors: string[] = [];
 
     if (!input.exerciseName || input.exerciseName.trim() == "") {
       errors.push("exerciseName");
@@ -257,18 +268,46 @@ export class ExerciseService {
       errors.push("exerciseStatus");
     }
 
+    if (!input.exerciseType || input.exerciseType.trim() == "") {
+      errors.push("exerciseType");
+    }
+
     if (!input.roomId) {
       errors.push("roomId");
     }
 
     if (errors.length > 0) {
-      throw new BadRequestException("กรุณาระบุ : " + errors.join(", "));
+      msgErrors.push("กรุณาระบุ : " + errors.join(", "));
+      errors = [];
+    }
+
+    if (!!input.exerciseType && input.exerciseType.trim() != "") {
+      const stringCheck = [ExerciseType.GROUP, ExerciseType.INDIVIDUAL];
+      if (!stringCheck.includes(input.exerciseType)) {
+        errors.push("exerciseType");
+      }
+    }
+
+    if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
+      const stringCheck = [ExerciseStatus.OPEN, ExerciseStatus.CLOSE];
+      if (!stringCheck.includes(input.exerciseStatus)) {
+        errors.push("exerciseStatus");
+      }
+    }
+
+    if (errors.length > 0) {
+      msgErrors.push(errors.join(", ") + " ไม่ถูกต้อง");
+      errors = [];
+    }
+
+    if (msgErrors.length > 0) {
+      throw new BadRequestException(msgErrors.join(" | "));
     }
   }
 
   private validateUpdateInput(input: UpdateExercise) {
-    const errors: string[] = [];
-
+    let errors: string[] = [];
+    const msgErrors: string[] = [];
     if (!input.exerciseId) {
       errors.push("exerciseId");
     }
@@ -289,8 +328,36 @@ export class ExerciseService {
       errors.push("exerciseStatus");
     }
 
+    if (!input.exerciseType || input.exerciseType.trim() == "") {
+      errors.push("exerciseType");
+    }
+
     if (errors.length > 0) {
-      throw new BadRequestException("กรุณาระบุ : " + errors.join(", "));
+      msgErrors.push("กรุณาระบุ : " + errors.join(", "));
+      errors = [];
+    }
+
+    if (!!input.exerciseType && input.exerciseType.trim() != "") {
+      const stringCheck = [ExerciseType.GROUP, ExerciseType.INDIVIDUAL];
+      if (!stringCheck.includes(input.exerciseType)) {
+        errors.push("exerciseType");
+      }
+    }
+
+    if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
+      const stringCheck = [ExerciseStatus.OPEN, ExerciseStatus.CLOSE];
+      if (!stringCheck.includes(input.exerciseStatus)) {
+        errors.push("exerciseStatus");
+      }
+    }
+
+    if (errors.length > 0) {
+      msgErrors.push(errors.join(", ") + " ไม่ถูกต้อง");
+      errors = [];
+    }
+
+    if (msgErrors.length > 0) {
+      throw new BadRequestException(msgErrors.join(" | "));
     }
   }
 }

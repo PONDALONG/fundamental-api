@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -47,11 +48,21 @@ export class ExerciseController {
 
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
-  async findByRoom(@Query("roomId") roomId: number) {
-    // return roomId;
-    //todo find by room
-    const exercises = await this.service.findAll(roomId);
-    return exercises;
+  async findByRoom(
+    @Query("roomYear") roomYear: number,
+    @Query("roomGroup") roomGroup: string,
+    @Query("roomTerm") roomTerm: number
+  ) {
+
+    try {
+
+      if (isNaN(+roomYear)) throw new BadRequestException("roomYear ไม่ถูกต้อง");
+      if (isNaN(+roomTerm)) throw new BadRequestException("roomTerm ไม่ถูกต้อง");
+
+      return await this.service.findAll(roomYear, roomGroup, roomTerm);
+    } catch (e) {
+      throw e;
+    }
   }
 
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
@@ -44,6 +44,39 @@ export class RoomController {
   async findByStudent(@Request() auth: any) {
     try {
       return await this.service.findByStudent(auth["user"] as User);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("filterGroups")
+  @HttpCode(HttpStatus.OK)
+  async filterGroup() {
+    try {
+      return await this.service.findAllGroup();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("filterYears")
+  @HttpCode(HttpStatus.OK)
+  async filterYearByGroup(@Query("group") group: string) {
+    try {
+      return await this.service.findAllYearByGroup(group);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("filterTerms")
+  @HttpCode(HttpStatus.OK)
+  async filterTermByGroupAndYear(@Query("group") group: string, @Query("year") year: number) {
+    try {
+      return await this.service.findAllTermByGroupAndYear(group, year);
     } catch (e) {
       throw e;
     }

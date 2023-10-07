@@ -1,4 +1,4 @@
-import { ExerciseStatus } from "./exercise-status.enum";
+import { ExerciseStatus, ExerciseType } from "./exercise.enum";
 
 export class CreateExercise {
   exerciseName: string;
@@ -8,4 +8,5 @@ export class CreateExercise {
   exerciseStartDate: Date;
   exerciseEndDate: Date;
   roomId: number;
+  exerciseType: ExerciseType;
 }

@@ -22,7 +22,7 @@ export class StudentRoom {
   room: Room;
 
   //student-room 1-n student-exercise
-  @OneToMany(() => StudentExercise, x => x.studentRoom)
+  @OneToMany(() => StudentExercise, x => x.studentRoom, { onDelete: "CASCADE" })
   stdExercises: StudentExercise[];
 
   //student-room n-1 user
