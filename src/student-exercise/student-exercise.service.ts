@@ -32,6 +32,16 @@ export class StudentExerciseService {
     return studentExercise;
   }
 
+  async findAll(exerciseId: number): Promise<StudentExercise[]> {
+    return await this.repository.createQueryBuilder("stdExec")
+      .innerJoin("stdExec.exercise", "exercise")
+      .innerJoin("stdExec.studentRoom", "stdRoom")
+      .innerJoin("stdRoom.user", "user")
+      .select(["stdExec", "stdRoom", "user"])
+      .where("exercise.exerciseId = :exerciseId", { exerciseId: exerciseId })
+      .getMany();
+  }
+
 
   /*------------------- SUB FUNCTION -------------------*/
 

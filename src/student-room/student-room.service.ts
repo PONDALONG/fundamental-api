@@ -8,6 +8,8 @@ import { UserService } from "../user/user.service";
 import { Room } from "../room/entities/room.entity";
 import { UserAndCsv } from "../user/dto/user-and-csv";
 import { StdRoomStatus } from "./entities/std-room-status.enum";
+import { Exercise } from "../exercise/entities/exercise.entity";
+import { StudentExercise } from "../student-exercise/entities/student-exercise.entity";
 
 @Injectable()
 export class StudentRoomService {
@@ -15,6 +17,10 @@ export class StudentRoomService {
   constructor(
     @InjectRepository(StudentRoom)
     private readonly repository: Repository<StudentRoom>,
+    @InjectRepository(Exercise)
+    private readonly exerciseRepository: Repository<Exercise>,
+    @InjectRepository(StudentExercise)
+    private readonly studentExerciseRepository: Repository<StudentExercise>,
     private readonly roomService: RoomService,
     private readonly userService: UserService
   ) {
@@ -25,7 +31,7 @@ export class StudentRoomService {
   async import(file: Express.Multer.File, roomId: number) {
 
     try {
-
+      const studentRooms: StudentRoom[] = [];
       let room: Room = null;
       if (!!roomId) {
         room = await this.roomService.findByRoomId(roomId);
@@ -50,7 +56,9 @@ export class StudentRoomService {
             const studentRoom = new StudentRoom();
             studentRoom.user = res.user[i];
             studentRoom.room = room;
-            await this.repository.save(studentRoom);
+            const save = await this.repository.save(studentRoom);
+
+            studentRooms.push(save);
             res.userToCsv[i].result = "สำเร็จ";
             res.userToCsv[i].status = true;
           } catch (e) {
@@ -58,6 +66,37 @@ export class StudentRoomService {
             res.userToCsv[i].status = false;
           }
         }
+
+        const exercises = await this.exerciseRepository.find({
+          where: {
+            room: room
+          }
+        });
+
+        const studentExercises: StudentExercise[] = [];
+
+        for (const exec of exercises) {
+          for (const stud of studentRooms) {
+            const exist = await this.studentExerciseRepository.exist(
+              {
+                where: {
+                  exercise: exec,
+                  studentRoom: stud
+                }
+              }
+            );
+            if (!exist) {
+              const studentExercise = new StudentExercise();
+              studentExercise.exercise = exec;
+              studentExercise.studentRoom = stud;
+              studentExercises.push(studentExercise);
+            }
+
+          }
+        }
+
+        await this.studentExerciseRepository.save(studentExercises);
+
       }
       return res.userToCsv;
     } catch (e) {

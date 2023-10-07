@@ -15,7 +15,7 @@ export class StudentExercise {
   @Column({ name: "std_exec_status", nullable: false, default: StdExecStatus.WAIT })
   stdExecStatus: StdExecStatus;
 
-  @Column({ name: "std_exec_type", nullable: true })
+  @Column({ name: "std_exec_group", nullable: true })
   stdExecGroup: string;
 
   @Column({ name: "std_exec_date_time", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })

@@ -1,9 +1,26 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors
+} from "@nestjs/common";
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
+import { StudentExerciseService } from "./student-exercise.service";
 
 @Controller("student-exercise")
+@UseInterceptors(ClassSerializerInterceptor)
 export class StudentExerciseController {
+
+  constructor(
+    private readonly service: StudentExerciseService
+  ) {
+  }
 
   @UseGuards(AuthGuard)
   @Post("send-exercise")
@@ -13,10 +30,10 @@ export class StudentExerciseController {
   }
 
   @UseGuards(AuthGuard)
-  @Get("find-by-exercise")
+  @Get("find-all")
   @HttpCode(HttpStatus.OK)
-  async findByExercise() {
-    //todo send findByExercise
+  async findByExercise(@Query("exerciseId") exerciseId: number) {
+    return await this.service.findAll(exerciseId);
   }
 
   @UseGuards(AdminGuard)

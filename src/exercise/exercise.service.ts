@@ -282,15 +282,13 @@ export class ExerciseService {
     }
 
     if (!!input.exerciseType && input.exerciseType.trim() != "") {
-      const stringCheck = [ExerciseType.GROUP, ExerciseType.INDIVIDUAL];
-      if (!stringCheck.includes(input.exerciseType)) {
+      if (!Object.values(ExerciseType).includes(input.exerciseType)) {
         errors.push("exerciseType");
       }
     }
 
     if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
-      const stringCheck = [ExerciseStatus.OPEN, ExerciseStatus.CLOSE];
-      if (!stringCheck.includes(input.exerciseStatus)) {
+      if (!Object.values(ExerciseStatus).includes(input.exerciseStatus)) {
         errors.push("exerciseStatus");
       }
     }
@@ -338,15 +336,13 @@ export class ExerciseService {
     }
 
     if (!!input.exerciseType && input.exerciseType.trim() != "") {
-      const stringCheck = [ExerciseType.GROUP, ExerciseType.INDIVIDUAL];
-      if (!stringCheck.includes(input.exerciseType)) {
+      if (!Object.values(ExerciseType).includes(input.exerciseType)) {
         errors.push("exerciseType");
       }
     }
 
     if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
-      const stringCheck = [ExerciseStatus.OPEN, ExerciseStatus.CLOSE];
-      if (!stringCheck.includes(input.exerciseStatus)) {
+      if (!Object.values(ExerciseStatus).includes(input.exerciseStatus)) {
         errors.push("exerciseStatus");
       }
     }
