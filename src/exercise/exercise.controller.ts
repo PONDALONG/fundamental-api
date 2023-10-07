@@ -14,7 +14,7 @@ import { CreateExerciseRequest } from "./dto/create-exercise-request";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ExerciseService } from "./exercise.service";
 import { Res } from "../utils/Res";
-import { UpdateExercise } from "./dto/update-exercise";
+import { UpdateExerciseRequest } from "./dto/update-exercise-request";
 
 @Controller("exercise")
 export class ExerciseController {
@@ -41,7 +41,7 @@ export class ExerciseController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: "files" }
   ]))
-  async update(@UploadedFiles() files: Array<Express.Multer.File>, @Body() input: UpdateExercise) {
+  async update(@UploadedFiles() files: Array<Express.Multer.File>, @Body() input: UpdateExerciseRequest) {
     await this.service.update(files, input);
     return this.response.ok();
   }

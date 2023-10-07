@@ -1,7 +1,7 @@
 import { CreateExerciseRequest } from "./create-exercise-request";
 import { IsNumberString } from "class-validator";
 
-export class UpdateExercise extends CreateExerciseRequest {
+export class UpdateExerciseRequest extends CreateExerciseRequest {
 
   @IsNumberString()
   exerciseId: number;

@@ -10,7 +10,7 @@ import { Room } from "../room/entities/room.entity";
 import { FileResource } from "../file-resource/entities/file-resource.entity";
 import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
 import { FileResult } from "../file-resource/dto/file-result";
-import { UpdateExercise } from "./dto/update-exercise";
+import { UpdateExerciseRequest } from "./dto/update-exercise-request";
 import * as fs from "fs";
 import * as path from "path";
 import { StudentRoomService } from "../student-room/student-room.service";
@@ -112,7 +112,7 @@ export class ExerciseService {
 
   }
 
-  async update(files: Array<Express.Multer.File>, input: UpdateExercise) {
+  async update(files: Array<Express.Multer.File>, input: UpdateExerciseRequest) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
@@ -301,7 +301,7 @@ export class ExerciseService {
     }
   }
 
-  private validateUpdateInput(input: UpdateExercise) {
+  private validateUpdateInput(input: UpdateExerciseRequest) {
     let errors: string[] = [];
     const msgErrors: string[] = [];
     if (!input.exerciseId) {
