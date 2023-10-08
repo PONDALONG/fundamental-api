@@ -1,5 +1,6 @@
 import { IsBlankNull } from "../../utils/custom-validator";
 import { User } from "../entities/user.entity";
+import { UserRole, UserStatus } from "./user.enum";
 
 export class LoginRequest {
   @IsBlankNull()
@@ -44,4 +45,15 @@ export class UserToCsv {
     this.result = result;
     this.status = status;
   }
+}
+
+export class adminCreate {
+  firstname = "admin";
+  lastname = "admin";
+  studentCode = "00000000000-0";
+  class = "admin";
+  role = UserRole.TEACHER;
+  userStatus = UserStatus.ACTIVE;
+
+
 }

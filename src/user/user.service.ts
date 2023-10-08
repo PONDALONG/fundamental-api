@@ -6,11 +6,11 @@ import { Readable } from "stream";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
 import { User } from "./entities/user.entity";
-import { UserRole, UserStatus } from "./dto/user.enum";
+import { UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
-import { ChangePassword, LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
+import { adminCreate, ChangePassword, LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
 
 @Injectable()
 export class UserService {
@@ -199,8 +199,8 @@ export class UserService {
     }
   }
 
-  async findAdmin() {
-    return await this.repository.findOne({ where: { studentCode: "admin" } });
+  async findAdmin(studentCode: string) {
+    return await this.repository.findOne({ where: { studentCode: studentCode } });
   }
 
   encode(pwd: string) {
@@ -213,14 +213,15 @@ export class UserService {
 
   private async createAdmin() {
     try {
-      let check = await this.findAdmin();
+      const admin = new adminCreate();
+      let check = await this.findAdmin(admin.studentCode);
       if (check) return;
       const user = new User();
-      user.firstname = "admin";
-      user.lastname = "admin";
-      user.studentCode = "admin";
-      user.password = this.encode("admin" + Constant.PASSWORD);
-      user.role = UserRole.TEACHER;
+      user.firstname = admin.firstname;
+      user.lastname = admin.lastname;
+      user.studentCode = admin.studentCode;
+      user.role = admin.role;
+      user.password = this.encode(admin.studentCode + Constant.PASSWORD);
       await this.repository.save(user);
     } catch (e) {
       console.error("createAdmin error : " + e.message);
