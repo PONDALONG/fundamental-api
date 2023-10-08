@@ -85,7 +85,6 @@ export class StudentAssignmentService {
       .innerJoin("stdAsm.assignment", "assignment")
       .select(["stdAsm", "assignment"])
       .where("stdAsm.stdAsmId = :stdAsmId", { stdAsmId: input.stdAsmId })
-      .andWhere("assignment.assignmentId = :assignmentId", { assignmentId: input.assignmentId })
       .getOne();
 
     if (!stdAsm) {
@@ -100,25 +99,17 @@ export class StudentAssignmentService {
 
       stdAsm.stdAsmScore = input.stdAsmScore;
       await queryRunner.manager.save(stdAsm);
-    } else {
-      // give score to group
-      const stdAsms = await this.repository.find({
-        where: {
-          stdAsmGroup: stdAsm.stdAsmGroup,
-          assignment: stdAsm.assignment
-        }
-      });
 
-      const query = "UPDATE student_assignment SET std_asm_score = ? WHERE std_asm_group = ? and assignment_id = ?";
+    } else {
 
       try {
+        const query = "UPDATE student_assignment SET std_asm_score = ? WHERE std_asm_group = ? and assignment_id = ?";
+
         await this.repository.query(query, [input.stdAsmScore, stdAsm.stdAsmGroup, stdAsm.assignment.assignmentId]);
       } catch (error) {
         throw new Error(`Error updating rows: ${error.message}`);
       }
     }
-
-
   }
 
 
