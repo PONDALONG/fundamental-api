@@ -1,21 +1,17 @@
-import { IsNumberString } from "class-validator";
-import { IsBlankNull } from "../../utils/custom-validator";
+import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
 
 export class RoomCreate {
-
-  @IsNumberString()
-  roomId: number;
 
   @IsBlankNull()
   roomDescription: string;
 
-  @IsNumberString()
+  @IsNumberStr()
   roomYear: number;
 
   @IsBlankNull()
   roomGroup: string;
 
-  @IsNumberString()
+  @IsNumberStr()
   roomTerm: number;
 
 }

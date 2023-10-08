@@ -10,7 +10,7 @@ import { UserRole, UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
-import { LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
+import { ChangePassword, LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
 
 @Injectable()
 export class UserService {
@@ -71,7 +71,7 @@ export class UserService {
           } else { //create user
             try {
               this.validateUser(u);
-              u.password = this.encode(u.studentCode.trim() + "Ab*");
+              u.password = this.encode(u.studentCode.trim() + Constant.PASSWORD);
               try {
                 const save: User = await this.repository.save(u);
                 users.push(save);
@@ -132,6 +132,38 @@ export class UserService {
     }
   }
 
+  async resetPassword(userId: number) {
+
+    try {
+
+      const user = await this.repository.findOne({ where: { userId: userId } });
+
+      if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
+
+      user.password = this.encode(user.studentCode + Constant.PASSWORD);
+      await this.repository.save(user);
+
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async changePassword(user: User, input: ChangePassword) {
+
+    try {
+
+      if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
+
+      if (!await this.compare(input.oldPassword, user.password)) throw new BadRequestException("รหัสผ่านเดิมไม่ถูกต้อง");
+
+      user.password = this.encode(input.newPassword);
+      await this.repository.save(user);
+
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
 
   /*------------------- SUB FUNCTION -------------------*/
 
@@ -187,7 +219,7 @@ export class UserService {
       user.firstname = "admin";
       user.lastname = "admin";
       user.studentCode = "admin";
-      user.password = this.encode("admin" + "Ab*");
+      user.password = this.encode("admin" + Constant.PASSWORD);
       user.role = UserRole.TEACHER;
       await this.repository.save(user);
     } catch (e) {

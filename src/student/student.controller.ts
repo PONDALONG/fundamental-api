@@ -47,7 +47,7 @@ export class StudentController {
         new FileTypeValidator({ fileType: "csv" })
       ]
     })
-  ) file: Express.Multer.File, @Body() body: RoomCreate) {
+  ) file: Express.Multer.File, @Body() body: any) {
     try {
       return await this.service.import(file, body.roomId);
     } catch (e) {

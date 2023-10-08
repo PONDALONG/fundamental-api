@@ -19,7 +19,7 @@ export class IsWhitespaceStringConstraint implements PipeTransform {
 export function IsBlankNull(validationOptions?: ValidationOptions) {
   return function(object: any, propertyName: string) {
     registerDecorator({
-      name: "isWhitespaceString",
+      name: "IsBlankNull",
       target: object.constructor,
       propertyName: propertyName,
       constraints: [],
@@ -33,6 +33,30 @@ export function IsBlankNull(validationOptions?: ValidationOptions) {
         },
         defaultMessage(args: ValidationArguments) {
           return `${args.property} should not be empty`;
+        }
+      }
+    });
+  };
+}
+
+export function IsNumberStr(validationOptions?: ValidationOptions) {
+  return function(object: any, propertyName: string) {
+    registerDecorator({
+      name: "IsNumberStr",
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (typeof value === "string") {
+            return !isNaN(Number(value));
+          } else if (typeof value === "number") {
+            return !isNaN(value);
+          }
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `${args.property} should be a number`;
         }
       }
     });

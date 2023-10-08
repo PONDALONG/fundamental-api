@@ -18,7 +18,7 @@ export class RoomController {
   @UseGuards(AdminGuard)
   @Post("create")
   @HttpCode(HttpStatus.OK)
-  async create(@Body() input: RoomCreate, @Request() auth: any) {
+  async create(@Body() input: RoomCreate) {
     try {
       await this.service.create(input);
       return this.response.ok();

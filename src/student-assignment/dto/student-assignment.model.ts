@@ -1,14 +1,13 @@
-import { IsNumberString } from "class-validator";
-import { IsBlankNull } from "../../utils/custom-validator";
+import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
 
 export class CheckStdAsm {
-  @IsNumberString()
+  @IsNumberStr()
   assignmentId: number;
 
-  @IsNumberString()
+  @IsNumberStr()
   stdAsmId: number;
 
-  @IsNumberString()
+  @IsNumberStr()
   stdAsmScore: number;
 }
 
@@ -22,7 +21,7 @@ export class SendAssignmentRequest {
 
 export class FormIntoGroups {
 
-  @IsNumberString()
+  @IsNumberStr()
   assignmentId: number;
 
   @IsBlankNull()

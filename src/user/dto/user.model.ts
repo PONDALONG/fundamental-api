@@ -9,6 +9,19 @@ export class LoginRequest {
   password: string;
 }
 
+export class ChangePassword {
+  @IsBlankNull()
+  oldPassword: string;
+
+  @IsBlankNull()
+  newPassword: string;
+}
+
+export class resetPassword {
+  @IsBlankNull()
+  userId: number;
+}
+
 
 export class UserAndCsv {
   user: User[];

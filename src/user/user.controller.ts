@@ -20,7 +20,8 @@ import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
 import { Res } from "../utils/Res";
-import { LoginRequest } from "./dto/user.model";
+import { ChangePassword, LoginRequest, resetPassword } from "./dto/user.model";
+import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -53,8 +54,23 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Post("change-password")
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Request() auth: any, @Body() body: any) {
-    //todo: change password
+  async changePassword(@Request() auth: any, @Body() input: ChangePassword) {
+    try {
+      await this.service.changePassword(auth.user, input);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() input: resetPassword) {
+    try {
+      await this.service.resetPassword(input.userId);
+    } catch (e) {
+      throw e;
+    }
   }
 
   @UseGuards(AuthGuard)

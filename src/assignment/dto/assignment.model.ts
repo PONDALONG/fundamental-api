@@ -1,6 +1,6 @@
 import { AssignmentStatus, AssignmentType } from "./assignment.enum";
-import { IsDateString, IsEnum, IsNotEmpty, IsNumberString } from "class-validator";
-import { IsBlankNull } from "../../utils/custom-validator";
+import { IsDateString, IsEnum, IsNotEmpty } from "class-validator";
+import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
 
 export class CreateAssignment {
 
@@ -10,7 +10,7 @@ export class CreateAssignment {
   @IsBlankNull()
   assignmentDescription: string;
 
-  @IsNumberString()
+  @IsNumberStr()
   assignmentScore: number;
 
   @IsEnum(AssignmentStatus)
@@ -20,7 +20,6 @@ export class CreateAssignment {
   @IsDateString()
   assignmentEndDate: Date;
 
-  @IsNumberString()
   roomId: number;
 
   @IsEnum(AssignmentType)
@@ -29,7 +28,7 @@ export class CreateAssignment {
 
 export class UpdateAssignment extends CreateAssignment {
 
-  @IsNumberString()
+  @IsNumberStr()
   assignmentId: number;
 
   deleteFileIds: string;
