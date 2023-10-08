@@ -6,10 +6,10 @@ import { Repository } from "typeorm";
 import { RoomService } from "../room/room.service";
 import { UserService } from "../user/user.service";
 import { Room } from "../room/entities/room.entity";
-import { UserAndCsv } from "../user/dto/user-and-csv";
-import { Exercise } from "../exercise/entities/exercise.entity";
-import { StudentExercise } from "../student-exercise/entities/student-exercise.entity";
+import { Assignment } from "../assignment/entities/assignment.entity";
+import { StudentAssignment } from "../student-assignment/entities/student-assignment.entity";
 import { StudentStatus } from "./dto/student.enum";
+import { UserAndCsv } from "../user/dto/user.model";
 
 @Injectable()
 export class StudentService {
@@ -17,10 +17,10 @@ export class StudentService {
   constructor(
     @InjectRepository(Student)
     private readonly repository: Repository<Student>,
-    @InjectRepository(Exercise)
-    private readonly exerciseRepository: Repository<Exercise>,
-    @InjectRepository(StudentExercise)
-    private readonly studentExerciseRepository: Repository<StudentExercise>,
+    @InjectRepository(Assignment)
+    private readonly assignmentRepository: Repository<Assignment>,
+    @InjectRepository(StudentAssignment)
+    private readonly studentAssignmentRepository: Repository<StudentAssignment>,
     private readonly roomService: RoomService,
     private readonly userService: UserService
   ) {
@@ -68,28 +68,28 @@ export class StudentService {
         }
         try {
 
-          const exercises = await this.exerciseRepository.find({ where: { room: room } });
+          const assignments = await this.assignmentRepository.find({ where: { room: room } });
 
-          const studentExercises: StudentExercise[] = [];
-          for (const exec of exercises) {
+          const studentAssignments: StudentAssignment[] = [];
+          for (const asm of assignments) {
             for (const stud of students) {
-              const exist = await this.studentExerciseRepository.exist(
+              const exist = await this.studentAssignmentRepository.exist(
                 {
                   where: {
-                    exercise: exec,
+                    assignment: asm,
                     student: stud
                   }
                 }
               );
               if (!exist) {
-                const studentExercise = new StudentExercise();
-                studentExercise.exercise = exec;
-                studentExercise.student = stud;
-                studentExercises.push(studentExercise);
+                const studentAssignment = new StudentAssignment();
+                studentAssignment.assignment = asm;
+                studentAssignment.student = stud;
+                studentAssignments.push(studentAssignment);
               }
             }
           }
-          await this.studentExerciseRepository.save(studentExercises);
+          await this.studentAssignmentRepository.save(studentAssignments);
         } catch (e) {
           console.error(e.message);
         }

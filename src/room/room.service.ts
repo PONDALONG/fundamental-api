@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { Room } from "./entities/room.entity";
-import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { RoomStatus } from "./dto/room.enum";
 import { StudentStatus } from "../student/dto/student.enum";
+import { RoomCreate } from "./dto/room.model";
 
 @Injectable()
 export class RoomService {
@@ -16,7 +16,7 @@ export class RoomService {
   ) {
   }
 
-  async create(input: RoomCreateRequestDto) {
+  async create(input: RoomCreate) {
     try {
       this.validateRoom(input);
       await this.checkDuplicateRoom(input);
@@ -37,7 +37,7 @@ export class RoomService {
 
   /*------------------- MAIN FUNCTION -------------------*/
 
-  async checkDuplicateRoom(input: RoomCreateRequestDto) {
+  async checkDuplicateRoom(input: RoomCreate) {
     try {
       const room = await this.repository.findOne({
         where: {
@@ -107,7 +107,7 @@ export class RoomService {
 
   /*------------------- SUB FUNCTION -------------------*/
 
-  private validateRoom(data: RoomCreateRequestDto) {
+  private validateRoom(data: RoomCreate) {
     const errors: string[] = [];
     if (!data.roomDescription || data.roomDescription.trim() == "") {
       errors.push("roomDescription");

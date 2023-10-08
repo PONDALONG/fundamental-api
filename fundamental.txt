@@ -5,24 +5,24 @@ fundamental
 	⨀ login							user/login
 	⨀ change-password				user/change-password
 
-▶️ STUDENT-ROOM
-	⨀ import						student-room/import
-	⨀ update						student-room/update
-	⨀ find-by-room					student-room/find-by-room/:roomId
+▶️ STUDENT
+	⨀ import						student/import
+	⨀ update						student/update
+	⨀ find-by-room					student/find-by-room/:roomId
 
 ▶️ ROOM
 	⨀ create						room/create
 	⨀ update						room/update
 
-▶️ EXERCISE
-	⨀ create						exercise/create
-	⨀ find-by-room					exercise/find-by-room/:roomId
-	⨀ update						exercise/update
+▶️ ASSIGNMENT
+	⨀ create						assignment/create
+	⨀ find-by-room					assignment/find-by-room/:roomId
+	⨀ update						assignment/update
 
-▶️ STUDENT-EXERCISE
-	⨀ send-exercise					student-exercise/send-exercise
-	⨀ find-by-id					student-exercise/find-by-id/:stdExecId
-	⨀ check-exercise-by-student		student-exercise/check-exercise-by-student/:studentId
+▶️ STUDENT-ASSIGNMENT
+	⨀ send-assignment					student-assignment/send-assignment
+	⨀ find-by-id					student-assignment/find-by-id/:stdAsmId
+	⨀ check-assignment-by-student		student-assignment/check-assignment-by-student/:studentId
 
 ▶️ FILE-RESOURSE
 	⨀ file

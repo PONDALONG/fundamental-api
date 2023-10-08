@@ -10,18 +10,17 @@ import {
   UploadedFiles,
   UseInterceptors
 } from "@nestjs/common";
-import { CreateExerciseRequest } from "./dto/create-exercise-request";
+import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { ExerciseService } from "./exercise.service";
+import { AssignmentService } from "./assignment.service";
 import { Res } from "../utils/Res";
-import { UpdateExerciseRequest } from "./dto/update-exercise-request";
 
-@Controller("exercise")
-export class ExerciseController {
+@Controller("assignment")
+export class AssignmentController {
   private readonly response = new Res();
 
   constructor(
-    private readonly service: ExerciseService
+    private readonly service: AssignmentService
   ) {
   }
 
@@ -31,7 +30,7 @@ export class ExerciseController {
     { name: "files" }
   ]))
   async create(@UploadedFiles(
-  ) files: Array<Express.Multer.File>, @Body() input: CreateExerciseRequest) {
+  ) files: Array<Express.Multer.File>, @Body() input: CreateAssignment) {
     await this.service.create(files, input);
     return this.response.ok();
   }
@@ -41,7 +40,7 @@ export class ExerciseController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: "files" }
   ]))
-  async update(@UploadedFiles() files: Array<Express.Multer.File>, @Body() input: UpdateExerciseRequest) {
+  async update(@UploadedFiles() files: Array<Express.Multer.File>, @Body() input: UpdateAssignment) {
     await this.service.update(files, input);
     return this.response.ok();
   }

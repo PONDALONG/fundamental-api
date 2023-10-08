@@ -12,41 +12,40 @@ import {
 } from "@nestjs/common";
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
-import { StudentExerciseService } from "./student-exercise.service";
-import { FormIntoGroups } from "./dto/form-into-groups-request";
-import { CheckStdExercise } from "./dto/check-std-exercise-request";
+import { StudentAssignmentService } from "./student-assignment.service";
 import { Res } from "../utils/Res";
+import { CheckStdAsm, FormIntoGroups } from "./dto/student-assignment.model";
 
-@Controller("student-exercise")
+@Controller("student-assignment")
 @UseInterceptors(ClassSerializerInterceptor)
-export class StudentExerciseController {
+export class StudentAssignmentController {
 
   private readonly response = new Res();
 
   constructor(
-    private readonly service: StudentExerciseService
+    private readonly service: StudentAssignmentService
   ) {
   }
 
   @UseGuards(AuthGuard)
-  @Post("send-exercise")
+  @Post("send-assigment")
   @HttpCode(HttpStatus.OK)
-  async sendExercise() {
-    //todo send exercise
+  async sendAssignment() {
+    //todo send assignment
   }
 
   @UseGuards(AuthGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
-  async findByExercise(@Query("exerciseId") exerciseId: number) {
-    return await this.service.findAll(exerciseId);
+  async findByAssignment(@Query("assignmentId") assignmentId: number) {
+    return await this.service.findAll(assignmentId);
   }
 
   @UseGuards(AdminGuard)
-  @Post("check-exercise")
+  @Post("check-assigment")
   @HttpCode(HttpStatus.OK)
-  async checkExercise(@Body() input: CheckStdExercise) {
-    await this.service.checkExercise(input);
+  async checkAssignment(@Body() input: CheckStdAsm) {
+    await this.service.checkAssignment(input);
   }
 
   @UseGuards(AdminGuard)

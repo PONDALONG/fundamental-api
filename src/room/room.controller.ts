@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Request, UseGuards } from "@nestjs/common";
-import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
+import { RoomCreate } from "./dto/room.model";
 import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
@@ -18,7 +18,7 @@ export class RoomController {
   @UseGuards(AdminGuard)
   @Post("create")
   @HttpCode(HttpStatus.OK)
-  async create(@Body() input: RoomCreateRequestDto, @Request() auth: any) {
+  async create(@Body() input: RoomCreate, @Request() auth: any) {
     try {
       await this.service.create(input);
       return this.response.ok();

@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Room } from "../../room/entities/room.entity";
 import { User } from "../../user/entities/user.entity";
-import { StudentExercise } from "../../student-exercise/entities/student-exercise.entity";
+import { StudentAssignment } from "../../student-assignment/entities/student-assignment.entity";
 import { StudentStatus } from "../dto/student.enum";
 
 @Entity({ name: "student" })
@@ -21,9 +21,9 @@ export class Student {
   @JoinColumn({ name: "room_id", referencedColumnName: "roomId" })
   room: Room;
 
-  //student 1-n student-exercise
-  @OneToMany(() => StudentExercise, x => x.student, { onDelete: "CASCADE" })
-  stdExercises: StudentExercise[];
+  //student 1-n student-assignment
+  @OneToMany(() => StudentAssignment, x => x.student, { onDelete: "CASCADE" })
+  studentAssignments: StudentAssignment[];
 
   //student 1-1 user
   @ManyToOne(() => User, x => x.student, { nullable: false })

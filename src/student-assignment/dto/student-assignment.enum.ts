@@ -1,4 +1,4 @@
-export enum StdExecStatus {
+export enum stdAsmStatus {
   WAIT = "WAIT",
   SUCCESS = "SUCCESS"
 }

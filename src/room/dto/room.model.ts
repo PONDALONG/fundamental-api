@@ -1,7 +1,7 @@
 import { IsNumberString } from "class-validator";
 import { IsBlankNull } from "../../utils/custom-validator";
 
-export class RoomCreateRequestDto {
+export class RoomCreate {
 
   @IsNumberString()
   roomId: number;

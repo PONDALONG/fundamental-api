@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RoomStatus } from "../dto/room.enum";
-import { Exercise } from "../../exercise/entities/exercise.entity";
+import { Assignment } from "../../assignment/entities/assignment.entity";
 import { Student } from "../../student/entities/student.entity";
 
 @Entity({ name: "room" })
@@ -33,9 +33,9 @@ export class Room {
   @Column({ name: "room_create_date", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   roomCreateDate: Date;
 
-  //room 1-n exercise
-  @OneToMany(() => Exercise, x => x.room)
-  exercises: Exercise[];
+  //room 1-n assignment
+  @OneToMany(() => Assignment, x => x.room)
+  assignments: Assignment[];
 
   //room 1-n student
   @OneToMany(() => Student, x => x.room)

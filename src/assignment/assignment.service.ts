@@ -1,37 +1,36 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateExerciseRequest } from "./dto/create-exercise-request";
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
-import { Exercise } from "./entities/exercise.entity";
-import { ExerciseStatus, ExerciseType } from "./dto/exercise.enum";
+import { Assignment } from "./entities/assignment.entity";
+import { AssignmentStatus, AssignmentType } from "./dto/assignment.enum";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 import { Room } from "../room/entities/room.entity";
 import { FileResource } from "../file-resource/entities/file-resource.entity";
 import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
-import { FileResult } from "../file-resource/dto/file-result";
-import { UpdateExerciseRequest } from "./dto/update-exercise-request";
+import { FileResult } from "../file-resource/dto/file-resource.model";
 import * as fs from "fs";
 import * as path from "path";
 import { StudentService } from "../student/student.service";
-import { StudentExerciseService } from "../student-exercise/student-exercise.service";
+import { StudentAssignmentService } from "../student-assignment/student-assignment.service";
+import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
 
 @Injectable()
-export class ExerciseService {
+export class AssignmentService {
 
   constructor(
-    @InjectRepository(Exercise) private readonly repository: Repository<Exercise>,
+    @InjectRepository(Assignment) private readonly repository: Repository<Assignment>,
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
     private dataSource: DataSource,
     private readonly studentRoomService: StudentService,
-    private readonly studentExerciseService: StudentExerciseService
+    private readonly assignmentService: StudentAssignmentService
   ) {
   }
 
   /*------------------- MAIN FUNCTION -------------------*/
 
-  async create(files: Array<Express.Multer.File>, input: CreateExerciseRequest) {
+  async create(files: Array<Express.Multer.File>, input: CreateAssignment) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
@@ -57,7 +56,7 @@ export class ExerciseService {
           const fileType = "." + listFileElement.originalname.split(".").pop();
           const random = new AppUtils().generateRandomString(5);
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
-          const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
+          const destinationPath = `${Constant.UPLOAD_PATH_ASSIGNMENT}/${fileName}`;
 
           fs.createWriteStream(path.resolve(Constant.PUBLIC_PATH + destinationPath)).write(listFileElement.buffer);
           fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
@@ -72,35 +71,35 @@ export class ExerciseService {
     //check save file
     if (!saveFile) throw new BadRequestException("บันทึกไฟล์ไม่สำเร็จ : " + msgFileError);
 
-    // save exercise
-    const exercise = new Exercise();
-    exercise.exerciseName = input.exerciseName.trim();
-    exercise.exerciseDescription = input.exerciseDescription.trim();
-    exercise.exerciseScore = input.exerciseScore;
-    exercise.exerciseStatus = input.exerciseStatus;
-    exercise.exerciseEndDate = input.exerciseEndDate;
-    exercise.exerciseType = input.exerciseType;
-    exercise.room = room;
+    // save assignment
+    const assignment = new Assignment();
+    assignment.assignmentName = input.assignmentName.trim();
+    assignment.assignmentDescription = input.assignmentDescription.trim();
+    assignment.assignmentScore = input.assignmentScore;
+    assignment.assignmentStatus = input.assignmentStatus;
+    assignment.assignmentEndDate = input.assignmentEndDate;
+    assignment.assignmentType = input.assignmentType;
+    assignment.room = room;
 
     const db = this.dataSource.createQueryRunner();
     await db.connect();
     await db.startTransaction();
 
     try {
-      const exerciseSave = await db.manager.save(exercise);
+      const assignmentSave = await db.manager.save(assignment);
 
       for (const i of fileResponses) {
         const fileResource = new FileResource();
         fileResource.fileResourceName = i.fileName;
         fileResource.fileResourcePath = i.filePath;
-        fileResource.exercise = exerciseSave;
-        fileResource.fileResourceType = FileResourceType.EXERCISE;
+        fileResource.assignment = assignmentSave;
+        fileResource.fileResourceType = FileResourceType.ASSIGNMENT;
         await db.manager.save(fileResource);
       }
       const studentRooms = await this.studentRoomService.findAllByRom(room);
-      const studentExercises = this.studentExerciseService.autoGenerate(exerciseSave, studentRooms);
+      const studentAssignments = this.assignmentService.autoGenerate(assignmentSave, studentRooms);
 
-      await db.manager.save(studentExercises);
+      await db.manager.save(studentAssignments);
 
       await db.commitTransaction();
     } catch (err) {
@@ -112,18 +111,18 @@ export class ExerciseService {
 
   }
 
-  async update(files: Array<Express.Multer.File>, input: UpdateExerciseRequest) {
+  async update(files: Array<Express.Multer.File>, input: UpdateAssignment) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
     let listFile: Express.Multer.File[] = null;
-    const exercise = await this.repository.findOne({
+    const assignment = await this.repository.findOne({
       where: {
-        exerciseId: input.exerciseId
+        assignmentId: input.assignmentId
       }
     });
 
-    if (!exercise) throw new BadRequestException("ไม่พบข้อมูล");
+    if (!assignment) throw new BadRequestException("ไม่พบข้อมูล");
 
     // validate input
     // this.validateUpdateInput(input);
@@ -137,7 +136,7 @@ export class ExerciseService {
           const fileType = "." + listFileElement.originalname.split(".").pop();
           const random = new AppUtils().generateRandomString(5);
           let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
-          const destinationPath = `${Constant.UPLOAD_PATH_EXERCISE}/${fileName}`;
+          const destinationPath = `${Constant.UPLOAD_PATH_ASSIGNMENT}/${fileName}`;
 
           fs.createWriteStream(path.resolve(Constant.PUBLIC_PATH + destinationPath)).write(listFileElement.buffer);
           fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
@@ -153,27 +152,27 @@ export class ExerciseService {
     //check save file
     if (!saveFile) throw new BadRequestException("บันทึกไฟล์ไม่สำเร็จ : " + msgFileError);
 
-    // save exercise
-    exercise.exerciseName = input.exerciseName.trim();
-    exercise.exerciseDescription = input.exerciseDescription.trim();
-    exercise.exerciseScore = input.exerciseScore;
-    exercise.exerciseStatus = input.exerciseStatus;
-    exercise.exerciseEndDate = input.exerciseEndDate;
-    exercise.exerciseType = input.exerciseType;
+    // save assignment
+    assignment.assignmentName = input.assignmentName.trim();
+    assignment.assignmentDescription = input.assignmentDescription.trim();
+    assignment.assignmentScore = input.assignmentScore;
+    assignment.assignmentStatus = input.assignmentStatus;
+    assignment.assignmentEndDate = input.assignmentEndDate;
+    assignment.assignmentType = input.assignmentType;
 
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const exerciseSave = await queryRunner.manager.save(exercise);
+      const assignmentSave = await queryRunner.manager.save(assignment);
 
       for (const i of fileResponses) {
         const fileResource = new FileResource();
         fileResource.fileResourceName = i.fileName;
         fileResource.fileResourcePath = i.filePath;
-        fileResource.exercise = exerciseSave;
-        fileResource.fileResourceType = FileResourceType.EXERCISE;
+        fileResource.assignment = assignmentSave;
+        fileResource.fileResourceType = FileResourceType.ASSIGNMENT;
         await queryRunner.manager.save(fileResource);
       }
 
@@ -181,8 +180,8 @@ export class ExerciseService {
         const fileResources = await this.fileResourceRepository.find({
           where: {
             fileResourceId: In(JSON.parse(input.deleteFileIds)),
-            exercise: {
-              exerciseId: exercise.exerciseId
+            assignment: {
+              assignmentId: assignment.assignmentId
             }
           }
         });
@@ -221,20 +220,20 @@ export class ExerciseService {
 
   async findAll(roomYear: number, roomGroup: string, roomTerm: number) {
 
-    let result: Exercise[] = [];
+    let result: Assignment[] = [];
 
     try {
       roomYear = roomYear || 0;
       roomTerm = roomTerm || 0;
       roomGroup = roomGroup || "";
 
-      result = await this.repository.createQueryBuilder("exercise")
-        .innerJoin("exercise.room", "rm")
-        .leftJoinAndSelect("exercise.fileResources", "file")
+      result = await this.repository.createQueryBuilder("assignment")
+        .innerJoin("assignment.room", "rm")
+        .leftJoinAndSelect("assignment.fileResources", "file")
         .where("rm.roomYear = :roomYear AND rm.roomGroup = :roomGroup AND rm.roomTerm = :roomTerm",
           { roomYear, roomGroup, roomTerm }
         )
-        .select(["exercise", "file", "rm.roomId", "rm.roomGroup", "rm.roomYear", "rm.roomTerm"])
+        .select(["assignment", "file", "rm.roomId", "rm.roomGroup", "rm.roomYear", "rm.roomTerm"])
         .getMany();
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -246,28 +245,28 @@ export class ExerciseService {
 
   /*------------------- SUB FUNCTION -------------------*/
 
-  private validateCreateInput(input: CreateExerciseRequest) {
+  private validateCreateInput(input: CreateAssignment) {
     let errors: string[] = [];
     const msgErrors: string[] = [];
 
-    if (!input.exerciseName || input.exerciseName.trim() == "") {
-      errors.push("exerciseName");
+    if (!input.assignmentName || input.assignmentName.trim() == "") {
+      errors.push("assignmentName");
     }
 
-    if (!input.exerciseDescription || input.exerciseDescription.trim() == "") {
-      errors.push("exerciseDescription");
+    if (!input.assignmentDescription || input.assignmentDescription.trim() == "") {
+      errors.push("assignmentDescription");
     }
 
-    if (!input.exerciseScore) {
-      errors.push("exerciseScore");
+    if (!input.assignmentScore) {
+      errors.push("assignmentScore");
     }
 
-    if (!input.exerciseStatus || input.exerciseStatus.trim() == "") {
-      errors.push("exerciseStatus");
+    if (!input.assignmentStatus || input.assignmentStatus.trim() == "") {
+      errors.push("assignmentStatus");
     }
 
-    if (!input.exerciseType || input.exerciseType.trim() == "") {
-      errors.push("exerciseType");
+    if (!input.assignmentType || input.assignmentType.trim() == "") {
+      errors.push("assignmentType");
     }
 
     if (!input.roomId) {
@@ -279,15 +278,15 @@ export class ExerciseService {
       errors = [];
     }
 
-    if (!!input.exerciseType && input.exerciseType.trim() != "") {
-      if (!Object.values(ExerciseType).includes(input.exerciseType)) {
-        errors.push("exerciseType");
+    if (!!input.assignmentType && input.assignmentType.trim() != "") {
+      if (!Object.values(AssignmentType).includes(input.assignmentType)) {
+        errors.push("assignmentType");
       }
     }
 
-    if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
-      if (!Object.values(ExerciseStatus).includes(input.exerciseStatus)) {
-        errors.push("exerciseStatus");
+    if (!!input.assignmentStatus && input.assignmentStatus.trim() != "") {
+      if (!Object.values(AssignmentStatus).includes(input.assignmentStatus)) {
+        errors.push("assignmentStatus");
       }
     }
 
@@ -301,31 +300,31 @@ export class ExerciseService {
     }
   }
 
-  private validateUpdateInput(input: UpdateExerciseRequest) {
+  private validateUpdateInput(input: UpdateAssignment) {
     let errors: string[] = [];
     const msgErrors: string[] = [];
-    if (!input.exerciseId) {
-      errors.push("exerciseId");
+    if (!input.assignmentId) {
+      errors.push("assignmentId");
     }
 
-    if (!input.exerciseName || input.exerciseName.trim() == "") {
-      errors.push("exerciseName");
+    if (!input.assignmentName || input.assignmentName.trim() == "") {
+      errors.push("assignmentName");
     }
 
-    if (!input.exerciseDescription || input.exerciseDescription.trim() == "") {
-      errors.push("exerciseDescription");
+    if (!input.assignmentDescription || input.assignmentDescription.trim() == "") {
+      errors.push("assignmentDescription");
     }
 
-    if (!input.exerciseScore) {
-      errors.push("exerciseScore");
+    if (!input.assignmentScore) {
+      errors.push("assignmentScore");
     }
 
-    if (!input.exerciseStatus || input.exerciseStatus.trim() == "") {
-      errors.push("exerciseStatus");
+    if (!input.assignmentStatus || input.assignmentStatus.trim() == "") {
+      errors.push("assignmentStatus");
     }
 
-    if (!input.exerciseType || input.exerciseType.trim() == "") {
-      errors.push("exerciseType");
+    if (!input.assignmentType || input.assignmentType.trim() == "") {
+      errors.push("assignmentType");
     }
 
     if (errors.length > 0) {
@@ -333,15 +332,15 @@ export class ExerciseService {
       errors = [];
     }
 
-    if (!!input.exerciseType && input.exerciseType.trim() != "") {
-      if (!Object.values(ExerciseType).includes(input.exerciseType)) {
-        errors.push("exerciseType");
+    if (!!input.assignmentType && input.assignmentType.trim() != "") {
+      if (!Object.values(AssignmentType).includes(input.assignmentType)) {
+        errors.push("assignmentType");
       }
     }
 
-    if (!!input.exerciseStatus && input.exerciseStatus.trim() != "") {
-      if (!Object.values(ExerciseStatus).includes(input.exerciseStatus)) {
-        errors.push("exerciseStatus");
+    if (!!input.assignmentStatus && input.assignmentStatus.trim() != "") {
+      if (!Object.values(AssignmentStatus).includes(input.assignmentStatus)) {
+        errors.push("assignmentStatus");
       }
     }
 

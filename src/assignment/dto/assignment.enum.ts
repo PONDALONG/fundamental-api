@@ -1,9 +1,9 @@
-export enum ExerciseStatus {
+export enum AssignmentStatus {
   OPEN = "OPEN",
   CLOSE = "CLOSE",
 }
 
-export enum ExerciseType {
+export enum AssignmentType {
   GROUP = "GROUP",
   INDIVIDUAL = "INDIVIDUAL"
 }

@@ -24,33 +24,6 @@ export class FileResourceController {
     return true;
   }
 
-  // @Post("upload-content")
-  // @UseInterceptors(FileInterceptor("file"))
-  // uploadContent(@UploadedFile() file?: Express.Multer.File, @Body() data?: UploadRequest) {
-  //
-  //   try {
-  //     const destinationPath = `${Constant.UPLOAD_PATH_CONTENT}/${file.originalname.replace(".", "-" + new Date().getTime().toString() + ".")}`;
-  //
-  //     createWriteStream(destinationPath).write(file.buffer);
-  //
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
-  // @Post("upload-exercise")
-  // @UseInterceptors(FileFieldsInterceptor([
-  //   { name: "files" }
-  // ]))
-  // uploadExercise(@UploadedFiles() files?: Array<Express.Multer.File>, @Body() data?: UploadRequest) {
-  //
-  // }
-
-  // @Get("download/:dir/:fileName")
-  // download(@Res() res: Response, @Param("fileName") fileName: string, @Param("dir") dir: string) {
-  //   res.sendFile(fileName, { root: new AppUtils().findDir(dir) });
-  // }
-
   @Delete("delete")
   @HttpCode(HttpStatus.OK)
   async delete(@Query("fileId") fileId: number) {

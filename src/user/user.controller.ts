@@ -16,11 +16,11 @@ import {
   UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { LoginRequest } from "./dto/login.request";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
 import { Res } from "../utils/Res";
+import { LoginRequest } from "./dto/user.model";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)

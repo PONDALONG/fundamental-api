@@ -17,7 +17,7 @@ import {
 import { StudentService } from "./student.service";
 import { AdminGuard } from "../auth/admin.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { RoomCreateRequestDto } from "../room/dto/room-create-request.dto";
+import { RoomCreate } from "../room/dto/room.model";
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller("student")
@@ -47,7 +47,7 @@ export class StudentController {
         new FileTypeValidator({ fileType: "csv" })
       ]
     })
-  ) file: Express.Multer.File, @Body() body: RoomCreateRequestDto) {
+  ) file: Express.Multer.File, @Body() body: RoomCreate) {
     try {
       return await this.service.import(file, body.roomId);
     } catch (e) {
@@ -58,7 +58,7 @@ export class StudentController {
   @UseGuards(AdminGuard)
   @Post("update")
   @HttpCode(HttpStatus.OK)
-  async update(@Body() body: RoomCreateRequestDto) {
+  async update(@Body() body: RoomCreate) {
     //todo: update
   }
 }

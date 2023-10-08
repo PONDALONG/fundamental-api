@@ -5,14 +5,12 @@ import * as csv from "csv-parser";
 import { Readable } from "stream";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
-import { LoginRequest } from "./dto/login.request";
 import { User } from "./entities/user.entity";
-import { UserToCsv } from "./dto/user-to-csv";
-import { UserAndCsv } from "./dto/user-and-csv";
 import { UserRole, UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
+import { LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
 
 @Injectable()
 export class UserService {

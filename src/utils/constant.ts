@@ -1,6 +1,6 @@
 export enum Constant {
-  UPLOAD_PATH_EXERCISE = "exercises",
-  UPLOAD_PATH_STUDENT_EXERCISE = "student-exercises",
+  UPLOAD_PATH_ASSIGNMENT = "assignments",
+  UPLOAD_PATH_STUDENT_ASSIGNMENT = "student-assignments",
   UPLOAD_PATH_PROFILE = "profiles",
   PUBLIC_PATH = "public/",
 }
