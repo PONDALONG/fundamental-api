@@ -2,15 +2,15 @@ import { User } from "./user/entities/user.entity";
 import { StudentExercise } from "./student-exercise/entities/student-exercise.entity";
 import { Room } from "./room/entities/room.entity";
 import { Exercise } from "./exercise/entities/exercise.entity";
-import { StudentRoom } from "./student-room/entities/student-room.entity";
+import { Student } from "./student/entities/student.entity";
 import { UserController } from "./user/user.controller";
 import { RoomController } from "./room/room.controller";
-import { StudentRoomController } from "./student-room/student-room.controller";
+import { StudentController } from "./student/student.controller";
 import { ExerciseController } from "./exercise/exercise.controller";
 import { StudentExerciseController } from "./student-exercise/student-exercise.controller";
 import { UserService } from "./user/user.service";
 import { RoomService } from "./room/room.service";
-import { StudentRoomService } from "./student-room/student-room.service";
+import { StudentService } from "./student/student.service";
 import { ExerciseService } from "./exercise/exercise.service";
 import { StudentExerciseService } from "./student-exercise/student-exercise.service";
 import { AuthService } from "./auth/auth.service";
@@ -23,7 +23,7 @@ export const BaseImport = [];
 export const ImportEntities = [
   User,
   Room,
-  StudentRoom,
+  Student,
   Exercise,
   StudentExercise,
   FileResource
@@ -31,7 +31,7 @@ export const ImportEntities = [
 export const ImportControllers = [
   UserController,
   RoomController,
-  StudentRoomController,
+  StudentController,
   ExerciseController,
   StudentExerciseController,
   FileResourceController
@@ -39,7 +39,7 @@ export const ImportControllers = [
 
 export const ImportServices = [
   RoomService,
-  StudentRoomService,
+  StudentService,
   UserService,
   ExerciseService,
   StudentExerciseService,

@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RoomStatus } from "../dto/room.enum";
 import { Exercise } from "../../exercise/entities/exercise.entity";
-import { StudentRoom } from "../../student-room/entities/student-room.entity";
+import { Student } from "../../student/entities/student.entity";
 
 @Entity({ name: "room" })
 export class Room {
@@ -37,8 +37,8 @@ export class Room {
   @OneToMany(() => Exercise, x => x.room)
   exercises: Exercise[];
 
-  //room 1-n student-room
-  @OneToMany(() => StudentRoom, x => x.room)
-  studentRooms: StudentRoom[];
+  //room 1-n student
+  @OneToMany(() => Student, x => x.room)
+  studentRooms: Student[];
 
 }

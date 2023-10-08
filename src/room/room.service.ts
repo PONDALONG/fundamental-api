@@ -5,7 +5,7 @@ import { RoomCreateRequestDto } from "./dto/room-create-request.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { RoomStatus } from "./dto/room.enum";
-import { StdRoomStatus } from "../student-room/dto/std-room.enum";
+import { StudentStatus } from "../student/dto/student.enum";
 
 @Injectable()
 export class RoomService {
@@ -79,7 +79,7 @@ export class RoomService {
       {
         where: {
           studentRooms: {
-            stdRoomStatus: StdRoomStatus.ACTIVE,
+            studentStatus: StudentStatus.ACTIVE,
             user: {
               userId: user.userId
             }

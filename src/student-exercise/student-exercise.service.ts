@@ -4,7 +4,7 @@ import { StudentExercise } from "./entities/student-exercise.entity";
 import { DataSource, In, Repository } from "typeorm";
 import { Exercise } from "../exercise/entities/exercise.entity";
 import { SendExerciseRequest } from "./dto/send-exercise-request";
-import { StudentRoom } from "../student-room/entities/student-room.entity";
+import { Student } from "../student/entities/student.entity";
 import { FormIntoGroups } from "./dto/form-into-groups-request";
 import { CheckStdExercise } from "./dto/check-std-exercise-request";
 import { ExerciseType } from "../exercise/dto/exercise.enum";
@@ -22,13 +22,13 @@ export class StudentExerciseService {
 
   /*------------------- MAIN FUNCTION -------------------*/
 
-  autoGenerate(exercise: Exercise, studentRoom: StudentRoom[]): StudentExercise[] {
+  autoGenerate(exercise: Exercise, students: Student[]): StudentExercise[] {
     const studentExercise: StudentExercise[] = Array<StudentExercise>();
 
-    for (const studentRoomElement of studentRoom) {
+    for (const student of students) {
       const save = new StudentExercise();
       save.exercise = exercise;
-      save.studentRoom = studentRoomElement;
+      save.student = student;
       studentExercise.push(save);
     }
 
@@ -38,9 +38,9 @@ export class StudentExerciseService {
   async findAll(exerciseId: number): Promise<StudentExercise[]> {
     return await this.repository.createQueryBuilder("stdExec")
       .innerJoin("stdExec.exercise", "exercise")
-      .innerJoin("stdExec.studentRoom", "stdRoom")
-      .innerJoin("stdRoom.user", "user")
-      .select(["stdExec", "stdRoom", "user"])
+      .innerJoin("stdExec.student", "student")
+      .innerJoin("student.user", "user")
+      .select(["stdExec", "student", "user"])
       .where("exercise.exerciseId = :exerciseId", { exerciseId: exerciseId })
       .getMany();
   }

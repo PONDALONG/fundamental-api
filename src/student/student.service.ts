@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { StudentRoom } from "./entities/student-room.entity";
+import { Student } from "./entities/student.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { Repository } from "typeorm";
@@ -9,14 +9,14 @@ import { Room } from "../room/entities/room.entity";
 import { UserAndCsv } from "../user/dto/user-and-csv";
 import { Exercise } from "../exercise/entities/exercise.entity";
 import { StudentExercise } from "../student-exercise/entities/student-exercise.entity";
-import { StdRoomStatus } from "./dto/std-room.enum";
+import { StudentStatus } from "./dto/student.enum";
 
 @Injectable()
-export class StudentRoomService {
+export class StudentService {
 
   constructor(
-    @InjectRepository(StudentRoom)
-    private readonly repository: Repository<StudentRoom>,
+    @InjectRepository(Student)
+    private readonly repository: Repository<Student>,
     @InjectRepository(Exercise)
     private readonly exerciseRepository: Repository<Exercise>,
     @InjectRepository(StudentExercise)
@@ -31,7 +31,7 @@ export class StudentRoomService {
   async import(file: Express.Multer.File, roomId: number) {
 
     try {
-      const studentRooms: StudentRoom[] = [];
+      const students: Student[] = [];
       let room: Room = null;
       if (!!roomId) {
         room = await this.roomService.findByRoomId(roomId);
@@ -43,9 +43,9 @@ export class StudentRoomService {
       if (!!roomId) {
         for (const i in res.user) {
           try {
-            const haveStd: StudentRoom = await this.findByUser(res.user[i]);
+            const haveStd: Student = await this.findByUser(res.user[i]);
             if (!!haveStd) {
-              haveStd.stdRoomStatus = StdRoomStatus.ACTIVE;
+              haveStd.studentStatus = StudentStatus.ACTIVE;
               haveStd.room = room;
               await this.repository.save(haveStd);
               res.userToCsv[i].result = "สำเร็จ";
@@ -53,12 +53,12 @@ export class StudentRoomService {
               continue; // skip to next loop
             }
 
-            const studentRoom = new StudentRoom();
+            const studentRoom = new Student();
             studentRoom.user = res.user[i];
             studentRoom.room = room;
             const save = await this.repository.save(studentRoom);
 
-            studentRooms.push(save);
+            students.push(save);
             res.userToCsv[i].result = "สำเร็จ";
             res.userToCsv[i].status = true;
           } catch (e) {
@@ -72,19 +72,19 @@ export class StudentRoomService {
 
           const studentExercises: StudentExercise[] = [];
           for (const exec of exercises) {
-            for (const stud of studentRooms) {
+            for (const stud of students) {
               const exist = await this.studentExerciseRepository.exist(
                 {
                   where: {
                     exercise: exec,
-                    studentRoom: stud
+                    student: stud
                   }
                 }
               );
               if (!exist) {
                 const studentExercise = new StudentExercise();
                 studentExercise.exercise = exec;
-                studentExercise.studentRoom = stud;
+                studentExercise.student = stud;
                 studentExercises.push(studentExercise);
               }
             }

@@ -14,16 +14,16 @@ import {
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
-import { StudentRoomService } from "./student-room.service";
+import { StudentService } from "./student.service";
 import { AdminGuard } from "../auth/admin.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { RoomCreateRequestDto } from "../room/dto/room-create-request.dto";
 
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller("student-room")
-export class StudentRoomController {
+@Controller("student")
+export class StudentController {
   constructor(
-    private readonly service: StudentRoomService
+    private readonly service: StudentService
   ) {
   }
 

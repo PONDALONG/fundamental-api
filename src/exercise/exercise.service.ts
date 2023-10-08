@@ -13,7 +13,7 @@ import { FileResult } from "../file-resource/dto/file-result";
 import { UpdateExerciseRequest } from "./dto/update-exercise-request";
 import * as fs from "fs";
 import * as path from "path";
-import { StudentRoomService } from "../student-room/student-room.service";
+import { StudentService } from "../student/student.service";
 import { StudentExerciseService } from "../student-exercise/student-exercise.service";
 
 @Injectable()
@@ -24,7 +24,7 @@ export class ExerciseService {
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
     private dataSource: DataSource,
-    private readonly studentRoomService: StudentRoomService,
+    private readonly studentRoomService: StudentService,
     private readonly studentExerciseService: StudentExerciseService
   ) {
   }

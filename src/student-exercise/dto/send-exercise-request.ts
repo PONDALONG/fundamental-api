@@ -1,6 +1,6 @@
 export class SendExerciseRequest {
   exerciseId: number;
-  stdRoomId: number;
+  studentId: number;
   stdExecResult: string;
   stdExecStatus: string;
   stdExecScore: number;
