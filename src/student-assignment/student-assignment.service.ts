@@ -1,11 +1,19 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { StudentAssignment } from "./entities/student-assignment.entity";
 import { DataSource, In, Repository } from "typeorm";
 import { Assignment } from "../assignment/entities/assignment.entity";
 import { Student } from "../student/entities/student.entity";
 import { AssignmentType } from "../assignment/dto/assignment.enum";
-import { CheckStdAsm, FormIntoGroups, GroupAssignment } from "./dto/student-assignment.model";
+import { CheckStdAsm, FormIntoGroups, GroupAssignment, sendAssignment } from "./dto/student-assignment.model";
+import { stdAsmStatus } from "./dto/student-assignment.enum";
+import { AppUtils } from "../utils/app.utils";
+import { Constant } from "../utils/constant";
+import fs from "fs";
+import path from "path";
+import { FileResult } from "../file-resource/dto/file-resource.model";
+import { FileResource } from "../file-resource/entities/file-resource.entity";
+import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
 
 @Injectable()
 export class StudentAssignmentService {
@@ -14,6 +22,8 @@ export class StudentAssignmentService {
     private readonly repository: Repository<StudentAssignment>,
     @InjectRepository(Assignment)
     private readonly assignmentRepository: Repository<Assignment>,
+    @InjectRepository(FileResource)
+    private readonly fileResourceRepository: Repository<FileResource>,
     private dataSource: DataSource
   ) {
   }
@@ -35,56 +45,54 @@ export class StudentAssignmentService {
 
   async findAll(assignmentId: number) {
 
+    if (isNaN(Number(assignmentId))) throw new NotFoundException("assignmentId ต้องเป็นตัวเลข");
+
     const assignment = await this.assignmentRepository.findOne({
       where: {
         assignmentId: assignmentId
       }
     });
 
-    if (!assignment) throw new BadRequestException("ไม่พบข้อมูล แบบฝึกหัด");
+    if (!assignment) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
 
-    if (assignment.assignmentType === AssignmentType.GROUP) {
-      //type GROUP
-      const studentAssignments = await this.repository.createQueryBuilder("stdAsm")
-        .innerJoin("stdAsm.student", "student")
-        .innerJoin("stdAsm.assignment", "assignment")
-        .innerJoin("student.user", "user")
-        .select(["stdAsm.stdAsmStatus", "stdAsm.stdAsmGroup"])
-        .where("assignment.assignmentId = :assignmentId", assignment)
-        .groupBy("stdAsm.stdAsmGroup")
-        .getMany();
-      const groups: GroupAssignment[] = Array<GroupAssignment>();
+    // const data = await this.repository.createQueryBuilder("stdAsm")
+    //   .innerJoin("stdAsm.assignment", "assignment")
+    //   .innerJoin("stdAsm.student", "student")
+    //   .innerJoin("student.user", "user")
+    //   .select(["stdAsm", "student", "user"])
+    //   .where("assignment.assignmentId = :assignmentId", assignment)
+    //   .getMany();
 
-      for (const stdAsm of studentAssignments) {
+    const data = await this.repository.find({
+      relations: ["student", "student.user"],
+      where: {
+        assignment: assignment
+      }
+    });
+
+    if (assignment.assignmentType === AssignmentType.INDIVIDUAL) return data;
+
+    const groups: GroupAssignment[] = Array<GroupAssignment>();
+
+    for (const stdAsm of data) {
+      if (groups.length === 0) {
         const group = new GroupAssignment();
         group.stdAsmGroup = stdAsm.stdAsmGroup;
+        group.studentAssignments.push(stdAsm);
         groups.push(group);
+      } else {
+        const index = groups.findIndex((x) => x.stdAsmGroup === stdAsm.stdAsmGroup);
+        if (index >= 0) {
+          groups[index].studentAssignments.push(stdAsm);
+        } else {
+          const group = new GroupAssignment();
+          group.stdAsmGroup = stdAsm.stdAsmGroup;
+          group.studentAssignments.push(stdAsm);
+          groups.push(group);
+        }
       }
-
-      for (const group of groups) {
-        group.studentAssignments = await this.repository.createQueryBuilder("stdAsm")
-          .innerJoin("stdAsm.student", "student")
-          .innerJoin("stdAsm.assignment", "assignment")
-          .innerJoin("student.user", "user")
-          .select(["stdAsm", "student", "user"])
-          .where("assignment.assignmentId = :assignmentId", assignment)
-          .andWhere("stdAsm.stdAsmGroup = :stdAsmGroup OR (:stdAsmGroup IS null AND stdAsm.stdAsmGroup is null)", { stdAsmGroup: group.stdAsmGroup })
-          .getMany();
-      }
-
-      return groups;
-
-    } else {
-      //type INDIVIDUAL
-      return await this.repository.createQueryBuilder("stdAsm")
-        .innerJoin("stdAsm.assignment", "assignment")
-        .innerJoin("stdAsm.student", "student")
-        .innerJoin("student.user", "user")
-        .select(["stdAsm", "student", "user"])
-        .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
-        .getMany();
     }
-
+    return groups;
 
   }
 
@@ -154,6 +162,105 @@ export class StudentAssignmentService {
       } catch (error) {
         throw new Error(`Error updating rows: ${error.message}`);
       }
+    }
+  }
+
+  async sendAssignment(input: sendAssignment, files: Array<Express.Multer.File>) {
+    const fileResponses: FileResult[] = [];
+    let saveFile = true;
+    let msgFileError = "";
+    let listFile: Express.Multer.File[] = null;
+    const stdAsm = await this.repository.findOne({
+      where: {
+        stdAsmId: input.stdAsmId
+      }
+    });
+
+    if (!stdAsm) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+
+    if (!!files["files"]) {
+
+      listFile = files["files"];
+      for (const listFileElement of listFile) {
+
+        try {
+          const fileType = "." + listFileElement.originalname.split(".").pop();
+          const random = new AppUtils().generateRandomString(5);
+          let fileName = listFileElement.originalname.replace(fileType, "-" + random + fileType);
+          const destinationPath = `${Constant.UPLOAD_PATH_STUDENT_ASSIGNMENT}/${fileName}`;
+
+          fs.createWriteStream(path.resolve(Constant.PUBLIC_PATH + destinationPath)).write(listFileElement.buffer);
+          fileResponses.push(new FileResult(listFileElement.originalname, destinationPath));
+
+        } catch (error) {
+          saveFile = false;
+          msgFileError = error.message;
+          break;
+        }
+      }
+    }
+    if (!saveFile) throw new BadRequestException("บันทึกไฟล์ไม่สำเร็จ : " + msgFileError);
+
+    stdAsm.stdAsmStatus = stdAsmStatus.SUBMITTED;
+    stdAsm.stdAsmResult = input.stdAsmResult;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const studentAssignment = await queryRunner.manager.save(stdAsm);
+
+      const filesToSaveSave: FileResource[] = Array<FileResource>();
+      for (const i of fileResponses) {
+        const fileResource = new FileResource();
+        fileResource.fileResourceName = i.fileName;
+        fileResource.fileResourcePath = i.filePath;
+        fileResource.studentAssignment = studentAssignment;
+        fileResource.fileResourceType = FileResourceType.STUDENT_ASSIGNMENT;
+        filesToSaveSave.push(fileResource);
+      }
+      if (filesToSaveSave.length > 0)
+        await queryRunner.manager.save(filesToSaveSave);
+
+      if (JSON.parse(input.deleteFileIds).length > 0) {
+        const fileResources = await this.fileResourceRepository.find({
+          where: {
+            fileResourceId: In(JSON.parse(input.deleteFileIds)),
+            studentAssignment: {
+              stdAsmId: studentAssignment.stdAsmId
+            }
+          }
+        });
+
+        if (!!fileResources && fileResources.length > 0) {
+          await queryRunner.manager.delete(FileResource, fileResources);
+        }
+
+        for (const fileResource of fileResources) {
+          try {
+
+            const directoryPath = path.resolve(Constant.PUBLIC_PATH + fileResource.fileResourcePath);
+            fs.accessSync(directoryPath, fs.constants.F_OK);
+            fs.unlinkSync(directoryPath);
+
+          } catch (error) {
+
+            if (error.code === "ENOENT") {
+              console.error("file not found. : " + fileResource.fileResourcePath);
+            } else {
+              console.error(error.message);
+            }
+          }
+        }
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(e);
+    } finally {
+      await queryRunner.release();
     }
   }
 

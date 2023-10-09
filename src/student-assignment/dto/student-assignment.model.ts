@@ -33,6 +33,17 @@ export class FormIntoGroups {
 }
 
 export class GroupAssignment {
-  studentAssignments: StudentAssignment[];
+  studentAssignments: StudentAssignment[] = Array<StudentAssignment>();
   stdAsmGroup: string;
+}
+
+export class sendAssignment {
+  @IsNumberStr()
+  stdAsmId: number;
+
+  @IsBlankNull()
+  stdAsmResult: string;
+
+  deleteFileIds: string;
+
 }

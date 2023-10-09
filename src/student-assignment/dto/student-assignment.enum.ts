@@ -1,4 +1,5 @@
 export enum stdAsmStatus {
-  WAIT = "WAIT",
-  SUCCESS = "SUCCESS"
+  WAITING = "WAITING",
+  SUBMITTED = "SUBMITTED",
+  CHECKED = "CHECKED",
 }

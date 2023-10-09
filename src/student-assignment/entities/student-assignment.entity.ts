@@ -12,13 +12,13 @@ export class StudentAssignment {
   @Column({ name: "std_asm_result", type: "longtext", nullable: true })
   stdAsmResult: string;
 
-  @Column({ name: "std_asm_status", nullable: false, default: stdAsmStatus.WAIT })
+  @Column({ name: "std_asm_status", nullable: false, default: stdAsmStatus.WAITING })
   stdAsmStatus: stdAsmStatus;
 
   @Column({ name: "std_asm_group", nullable: true })
   stdAsmGroup: string;
 
-  @Column({ name: "std_asm_date_time", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @Column({ name: "std_asm_date_time", nullable: true, type: "timestamp"})
   stdAsmDateTime: Date;
 
   @Column({ name: "std_asm_score", nullable: false, default: 0, type: "float" })
