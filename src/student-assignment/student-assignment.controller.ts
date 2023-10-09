@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  Request,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
@@ -15,7 +16,6 @@ import { AuthGuard } from "../auth/auth.guard";
 import { StudentAssignmentService } from "./student-assignment.service";
 import { Res } from "../utils/Res";
 import { CheckStdAsm, FormIntoGroups } from "./dto/student-assignment.model";
-import { IsNumberStr } from "../utils/custom-validator";
 
 @Controller("student-assignment")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -55,5 +55,12 @@ export class StudentAssignmentController {
   async formIntoGroups(@Body() input: FormIntoGroups) {
     await this.service.formIntoGroups(input);
     return this.response.ok();
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("update-my-assignments")
+  @HttpCode(HttpStatus.OK)
+  async updateMyAssignments(@Request() auth: any) {
+    await this.service.updateMyAssignments(auth.user);
   }
 }

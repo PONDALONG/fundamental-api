@@ -14,6 +14,7 @@ import path from "path";
 import { FileResult } from "../file-resource/dto/file-resource.model";
 import { FileResource } from "../file-resource/entities/file-resource.entity";
 import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
+import { User } from "../user/entities/user.entity";
 
 @Injectable()
 export class StudentAssignmentService {
@@ -24,6 +25,8 @@ export class StudentAssignmentService {
     private readonly assignmentRepository: Repository<Assignment>,
     @InjectRepository(FileResource)
     private readonly fileResourceRepository: Repository<FileResource>,
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
     private dataSource: DataSource
   ) {
   }
@@ -165,14 +168,17 @@ export class StudentAssignmentService {
     }
   }
 
-  async sendAssignment(input: sendAssignment, files: Array<Express.Multer.File>) {
+  async sendAssignment(input: sendAssignment, files: Array<Express.Multer.File>, user: User) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
     let listFile: Express.Multer.File[] = null;
     const stdAsm = await this.repository.findOne({
       where: {
-        stdAsmId: input.stdAsmId
+        stdAsmId: input.stdAsmId,
+        student: {
+          user: user
+        }
       }
     });
 
@@ -264,6 +270,37 @@ export class StudentAssignmentService {
     }
   }
 
+  async updateMyAssignments(user: User) {
+
+    try {
+
+      const stdAsms: StudentAssignment[] = Array<StudentAssignment>();
+
+      const assignments = await this.assignmentRepository.find({ where: { room: { studentRooms: { user: user } } } });
+
+      if (assignments.length == 0) throw new Error("ไม่มีรายการให้อัพเดท");
+
+      const student = await this.studentRepository.findOne({ where: { user: user } });
+
+      for (const assignment of assignments) {
+        const exist = await this.repository.exist({ where: { assignment: assignment, student: { user: user } } });
+
+        if (!exist) {
+          const stdAsm = new StudentAssignment();
+          stdAsm.assignment = assignment;
+          stdAsm.student = student;
+          stdAsms.push(stdAsm);
+        }
+      }
+
+      if (stdAsms.length == 0) throw new Error("ไม่มีรายการให้อัพเดท");
+
+      await this.repository.save(stdAsms);
+
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   /*------------------- SUB FUNCTION -------------------*/
 
