@@ -5,7 +5,7 @@ import { DataSource, In, Repository } from "typeorm";
 import { Assignment } from "../assignment/entities/assignment.entity";
 import { Student } from "../student/entities/student.entity";
 import { AssignmentType } from "../assignment/dto/assignment.enum";
-import { CheckStdAsm, FormIntoGroups } from "./dto/student-assignment.model";
+import { CheckStdAsm, FormIntoGroups, GroupAssignment } from "./dto/student-assignment.model";
 
 @Injectable()
 export class StudentAssignmentService {
@@ -33,14 +33,59 @@ export class StudentAssignmentService {
     return studentAssignments;
   }
 
-  async findAll(assignmentId: number): Promise<StudentAssignment[]> {
-    return await this.repository.createQueryBuilder("stdAsm")
-      .innerJoin("stdAsm.assignment", "assignment")
-      .innerJoin("stdAsm.student", "student")
-      .innerJoin("student.user", "user")
-      .select(["stdAsm", "student", "user"])
-      .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
-      .getMany();
+  async findAll(assignmentId: number) {
+
+    const assignment = await this.assignmentRepository.findOne({
+      where: {
+        assignmentId: assignmentId
+      }
+    });
+
+    if (!assignment) throw new BadRequestException("ไม่พบข้อมูล แบบฝึกหัด");
+
+    if (assignment.assignmentType === AssignmentType.GROUP) {
+      //type GROUP
+      const studentAssignments = await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .innerJoin("student.user", "user")
+        .select(["stdAsm.stdAsmStatus", "stdAsm.stdAsmGroup"])
+        .where("assignment.assignmentId = :assignmentId", assignment)
+        .groupBy("stdAsm.stdAsmGroup")
+        .getMany();
+      const groups: GroupAssignment[] = Array<GroupAssignment>();
+
+      for (const stdAsm of studentAssignments) {
+        const group = new GroupAssignment();
+        group.stdAsmGroup = stdAsm.stdAsmGroup;
+        groups.push(group);
+      }
+
+      for (const group of groups) {
+        group.studentAssignments = await this.repository.createQueryBuilder("stdAsm")
+          .innerJoin("stdAsm.student", "student")
+          .innerJoin("stdAsm.assignment", "assignment")
+          .innerJoin("student.user", "user")
+          .select(["stdAsm", "student", "user"])
+          .where("assignment.assignmentId = :assignmentId", assignment)
+          .andWhere("stdAsm.stdAsmGroup = :stdAsmGroup OR (:stdAsmGroup IS null AND stdAsm.stdAsmGroup is null)", { stdAsmGroup: group.stdAsmGroup })
+          .getMany();
+      }
+
+      return groups;
+
+    } else {
+      //type INDIVIDUAL
+      return await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .select(["stdAsm", "student", "user"])
+        .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
+        .getMany();
+    }
+
+
   }
 
   async formIntoGroups(input: FormIntoGroups) {

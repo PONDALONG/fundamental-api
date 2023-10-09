@@ -1,4 +1,5 @@
 import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
+import { StudentAssignment } from "../entities/student-assignment.entity";
 
 export class CheckStdAsm {
   @IsNumberStr()
@@ -29,4 +30,9 @@ export class FormIntoGroups {
 
   @IsBlankNull()
   stdAsmIds: number[];
+}
+
+export class GroupAssignment {
+  studentAssignments: StudentAssignment[];
+  stdAsmGroup: string;
 }

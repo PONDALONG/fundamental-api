@@ -34,7 +34,7 @@ export class StudentAssignmentController {
     //todo send assignment
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findByAssignment(@Query("assignmentId") assignmentId: number) {
