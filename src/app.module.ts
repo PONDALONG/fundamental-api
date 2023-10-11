@@ -1,16 +1,20 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ImportControllers, ImportEntities, ImportServices } from "./base-import";
-import * as process from "process";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { JwtModule } from "@nestjs/jwt";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 import { Constant } from "./utils/constant";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ".env"
+    }),
     TypeOrmModule.forRoot({
       type: "mysql",
       host: process.env.DB_HOST,
