@@ -11,6 +11,7 @@ import {
   ParseFilePipe,
   Post,
   Query,
+  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors
@@ -57,7 +58,7 @@ export class StudentController {
         new FileTypeValidator({ fileType: "csv" })
       ]
     })
-  ) file: Express.Multer.File, @Body() body: any) {
+  ) file: Express.Multer.File, @Body() body: any, @Request() req: any) {
     try {
       return await this.service.import(file, body.roomId);
     } catch (e) {

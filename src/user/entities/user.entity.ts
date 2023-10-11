@@ -8,14 +8,14 @@ export class User {
   @PrimaryGeneratedColumn({ name: "user_id" })
   userId: number;
 
-  @Column({ nullable: false, name: "firstname" })
-  firstname: string;
+  @Column({ nullable: false, name: "name_th" })
+  nameTH: string;
 
-  @Column({ nullable: false, name: "lastname" })
-  lastname: string;
+  @Column({ nullable: false, name: "name_en" })
+  nameEN: string;
 
-  @Column({ unique: true, nullable: false, name: "student_code", length: 13 })
-  studentCode: string;
+  @Column({ unique: true, nullable: false, name: "student_no", length: 13 })
+  studentNo: string;
 
   @Column({ nullable: false, name: "role", default: UserRole.STUDENT })
   role: string;
@@ -29,9 +29,6 @@ export class User {
 
   @Column({ nullable: true, name: "create_date", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   createDate: Date;
-
-  @Column({ nullable: true, name: "class" })
-  class: string;
 
   @Column({ nullable: true, name: "profile" })
   image: string;

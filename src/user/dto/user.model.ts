@@ -33,15 +33,13 @@ export class UserToCsv {
   firstname: string;
   lastname: string;
   studentId: string;
-  class: string;
   result: string;
   status: boolean;
 
   constructor(user: User, result: string, status: boolean) {
-    this.firstname = user.firstname;
-    this.lastname = user.lastname;
-    this.studentId = user.studentCode;
-    this.class = user.class;
+    this.firstname = user.nameTH;
+    this.lastname = user.nameEN;
+    this.studentId = user.studentNo;
     this.result = result;
     this.status = status;
   }
@@ -50,10 +48,17 @@ export class UserToCsv {
 export class adminCreate {
   firstname = "admin";
   lastname = "admin";
-  studentCode = "00000000000-0";
+  studentNo = "00000000000-0";
   class = "admin";
   role = UserRole.TEACHER;
   userStatus = UserStatus.ACTIVE;
 
+
+}
+
+export class Template {
+  STUDENT_NO: string;
+  FULLNAME: string;
+  FULLNAME_EN: string;
 
 }

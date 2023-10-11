@@ -11,12 +11,4 @@ export class AppUtils {
 
     return randomString;
   }
-
-  mapPathFile(dir: string, from: string, to: string) {
-    return "/" + dir.replace(from, to);
-  }
-
-  mapPathFileToDir(dir: string, from: string, to: string) {
-    return dir.replace(from, to);
-  }
 }

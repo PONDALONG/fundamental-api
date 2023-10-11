@@ -123,12 +123,12 @@ export class RoomService {
     }
   }
 
-  async findFilter(input:FindFilter){
+  async findFilter(input: FindFilter) {
     try {
       const result = await this.repository.find({
-        where:{
-          roomYear:input.year,
-          roomTerm:input.term
+        where: {
+          roomYear: input.year,
+          roomTerm: input.term
         }
       });
       return result;

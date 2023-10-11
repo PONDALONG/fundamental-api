@@ -12,9 +12,9 @@ export class AuthService {
   async tokenize(user: User) {
     const payload = {
       userId: user.userId,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      studentCode: user.studentCode,
+      firstname: user.nameTH,
+      lastname: user.nameEN,
+      studentNo: user.studentNo,
       role: user.role,
       createDate: user.createDate
     };

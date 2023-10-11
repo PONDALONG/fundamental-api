@@ -10,7 +10,7 @@ import { UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
-import { adminCreate, ChangePassword, LoginRequest, UserAndCsv, UserToCsv } from "./dto/user.model";
+import { adminCreate, ChangePassword, LoginRequest, Template, UserAndCsv, UserToCsv } from "./dto/user.model";
 
 @Injectable()
 export class UserService {
@@ -35,9 +35,9 @@ export class UserService {
 
       let results = await new Promise((resolve, reject) => {
         const map: User[] = [];
-        Readable.from(file.buffer.toString())
+        Readable.from(file.buffer.toString("utf-8"))
           .pipe(csv())
-          .on("data", (data) => map.push(this.mapUserToImports(data)))
+          .on("data", (data) => map.push(this.mapUserToImports(data as Template)))
           .on("end", () => {
             resolve(map);
           })
@@ -49,16 +49,15 @@ export class UserService {
       if ((results as User[]).length > 0) {
 
         for (const u of (results as User[])) {
-          const user: User = await this.findOneByStudentId(u.studentCode);
+          const user: User = await this.findOneByStudentId(u.studentNo);
           if (!!user) { //update user
             try {
               this.validateUser(u);
               try {
 
                 user.userStatus = UserStatus.ACTIVE;
-                user.firstname = u.firstname;
-                user.lastname = u.lastname;
-                user.class = u.class;
+                user.nameTH = u.nameTH;
+                user.nameEN = u.nameEN;
                 const save: User = await this.repository.save(user);
                 users.push(save);
                 userCsv.push(new UserToCsv(save, "สำเร็จ", true));
@@ -71,7 +70,7 @@ export class UserService {
           } else { //create user
             try {
               this.validateUser(u);
-              u.password = this.encode(u.studentCode.trim() + Constant.PASSWORD);
+              u.password = this.encode(u.studentNo.trim() + Constant.PASSWORD);
               try {
                 const save: User = await this.repository.save(u);
                 users.push(save);
@@ -101,7 +100,7 @@ export class UserService {
   async updateProfile(file: Express.Multer.File, user: User) {
     try {
 
-      const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentCode}.${file.originalname.split(".").pop()}`;
+      const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentNo}.${file.originalname.split(".").pop()}`;
 
       createWriteStream(path.resolve(destinationPath)).write(file.buffer);
 
@@ -114,7 +113,7 @@ export class UserService {
 
   async login(req: LoginRequest) {
     try {
-      const user = await this.repository.findOne({ where: { studentCode: req.studentId } });
+      const user = await this.repository.findOne({ where: { studentNo: req.studentId } });
 
       if (user) {
         if (await this.compare(req.password, user.password)) {
@@ -140,7 +139,7 @@ export class UserService {
 
       if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
 
-      user.password = this.encode(user.studentCode + Constant.PASSWORD);
+      user.password = this.encode(user.studentNo + Constant.PASSWORD);
       await this.repository.save(user);
 
     } catch (e) {
@@ -172,7 +171,7 @@ export class UserService {
   }
 
   async findOneByStudentId(studentId: string) {
-    return await this.repository.findOne({ where: { studentCode: studentId } });
+    return await this.repository.findOne({ where: { studentNo: studentId } });
   }
 
   async checkUser(user: User) {
@@ -183,11 +182,11 @@ export class UserService {
           "user.userId",
           "user.firstname",
           "user.lastname",
-          "user.studentCode",
+          "user.studentNo",
           "user.role",
           "user.createDate"
         ]).where(
-          "user.userId = :userId AND user.studentCode = :studentCode", user
+          "user.userId = :userId AND user.studentNo = :studentNo", user
         )
         .getOne();
       if (!user) {
@@ -199,8 +198,8 @@ export class UserService {
     }
   }
 
-  async findAdmin(studentCode: string) {
-    return await this.repository.findOne({ where: { studentCode: studentCode } });
+  async findAdmin(studentNo: string) {
+    return await this.repository.findOne({ where: { studentNo: studentNo } });
   }
 
   encode(pwd: string) {
@@ -214,40 +213,39 @@ export class UserService {
   private async createAdmin() {
     try {
       const admin = new adminCreate();
-      let check = await this.findAdmin(admin.studentCode);
+      let check = await this.findAdmin(admin.studentNo);
       if (check) return;
       const user = new User();
-      user.firstname = admin.firstname;
-      user.lastname = admin.lastname;
-      user.studentCode = admin.studentCode;
+      user.nameTH = admin.firstname;
+      user.nameEN = admin.lastname;
+      user.studentNo = admin.studentNo;
       user.role = admin.role;
-      user.password = this.encode(admin.studentCode + Constant.PASSWORD);
+      user.password = this.encode(admin.studentNo + Constant.PASSWORD);
       await this.repository.save(user);
     } catch (e) {
       console.error("createAdmin error : " + e.message);
     }
   }
 
-  private mapUserToImports(data: User): User {
-    console.log(data);
+  private mapUserToImports(data: Template): User {
+    data = JSON.parse(JSON.stringify(data).replaceAll("\ufeff", ""));
     const user = new User();
-    user.firstname = data.firstname;
-    user.lastname = data.lastname;
-    user.studentCode = data.studentCode;
-    user.class = data.class;
+    user.nameTH = data.FULLNAME;
+    user.nameEN = data.FULLNAME_EN;
+    user.studentNo = data.STUDENT_NO;
     return user;
   }
 
   private validateUser(user: User): void {
     const errors: string[] = [];
-    if (!user.firstname || user.firstname.trim() == "") {
-      errors.push("firstname");
+    if (!user.nameTH || user.nameTH.trim() == "") {
+      errors.push("FULLNAME");
     }
-    if (!user.lastname || user.lastname.trim() == "") {
-      errors.push("lastname");
+    if (!user.nameEN || user.nameEN.trim() == "") {
+      errors.push("FULLNAME_EN");
     }
-    if (!user.studentCode || user.studentCode.trim() == "") {
-      errors.push("studentCode");
+    if (!user.studentNo || user.studentNo.trim() == "") {
+      errors.push("STUDENT_NO");
     }
 
     if (errors.length > 0) {
