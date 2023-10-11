@@ -6,11 +6,12 @@ import { Readable } from "stream";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
 import { User } from "./entities/user.entity";
-import { UserStatus } from "./dto/user.enum";
+import { UserRole, UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
 import { adminCreate, ChangePassword, LoginRequest, Template, UserAndCsv, UserToCsv } from "./dto/user.model";
+import * as xlsx from "xlsx";
 
 @Injectable()
 export class UserService {
@@ -33,18 +34,8 @@ export class UserService {
     const userAndCsv = new UserAndCsv();
     try {
 
-      let results = await new Promise((resolve, reject) => {
-        const map: User[] = [];
-        Readable.from(file.buffer.toString("utf-8"))
-          .pipe(csv())
-          .on("data", (data) => map.push(this.mapUserToImports(data as Template)))
-          .on("end", () => {
-            resolve(map);
-          })
-          .on("error", () => {
-            reject(map);
-          });
-      });
+      const contentType = file.originalname.split(".").pop();
+      let results = contentType === "csv" ? await this.readCSV(file) : this.readXLSX(file);
 
       if ((results as User[]).length > 0) {
 
@@ -113,7 +104,7 @@ export class UserService {
 
   async login(req: LoginRequest) {
     try {
-      const user = await this.repository.findOne({ where: { studentNo: req.studentId } });
+      const user = await this.repository.findOne({ where: { studentNo: req.studentCode } });
 
       if (user) {
         if (await this.compare(req.password, user.password)) {
@@ -123,10 +114,9 @@ export class UserService {
           throw new BadRequestException("password incorrect");
         }
       } else {
-        throw new BadRequestException("user not found");
+        throw new BadRequestException("ไม่พบผู้ใช้งาน");
       }
     } catch (e) {
-      console.error("login error : " + e.message);
       throw new HttpException(e.message, e.status);
     }
   }
@@ -171,7 +161,7 @@ export class UserService {
   }
 
   async findOneByStudentId(studentId: string) {
-    return await this.repository.findOne({ where: { studentNo: studentId } });
+    return await this.repository.findOne({ where: { studentNo: studentId, role: UserRole.STUDENT } });
   }
 
   async checkUser(user: User) {
@@ -180,8 +170,8 @@ export class UserService {
       user = await this.repository.createQueryBuilder("user")
         .select([
           "user.userId",
-          "user.firstname",
-          "user.lastname",
+          "user.nameTH",
+          "user.nameEN",
           "user.studentNo",
           "user.role",
           "user.createDate"
@@ -220,20 +210,33 @@ export class UserService {
       user.nameEN = admin.lastname;
       user.studentNo = admin.studentNo;
       user.role = admin.role;
-      user.password = this.encode(admin.studentNo + Constant.PASSWORD);
+      user.password = this.encode(admin.studentNo);
       await this.repository.save(user);
     } catch (e) {
       console.error("createAdmin error : " + e.message);
     }
   }
 
-  private mapUserToImports(data: Template): User {
+  private mapUserToImportsCSV(data: Template): User {
     data = JSON.parse(JSON.stringify(data).replaceAll("\ufeff", ""));
     const user = new User();
-    user.nameTH = data.FULLNAME;
-    user.nameEN = data.FULLNAME_EN;
-    user.studentNo = data.STUDENT_NO;
+    user.nameTH = data["FULLNAME"];
+    user.nameEN = data["FULLNAME_EN"];
+    user.studentNo = data["STUDENT_NO"];
     return user;
+  }
+
+  private mapUserToImportsXLSX(data: Template[]): User[] {
+    const users: User[] = [];
+    data = JSON.parse(JSON.stringify(data).replaceAll("\ufeff", ""));
+    for (const u of data) {
+      const user = new User();
+      user.nameTH = u.FULLNAME;
+      user.nameEN = u.FULLNAME_EN;
+      user.studentNo = u.STUDENT_NO;
+      users.push(user);
+    }
+    return users;
   }
 
   private validateUser(user: User): void {
@@ -250,6 +253,37 @@ export class UserService {
 
     if (errors.length > 0) {
       throw new Error("กรุณาระบุ : " + errors.join(", "));
+    }
+  }
+
+  private async readCSV(file: Express.Multer.File) {
+
+    return await new Promise((resolve, reject) => {
+      const map: User[] = [];
+      Readable.from(file.buffer.toString("utf-8"))
+        .pipe(csv())
+        .on("data", (data) => {
+          map.push(this.mapUserToImportsCSV(data as Template));
+        })
+        .on("end", () => {
+          resolve(map);
+        })
+        .on("error", () => {
+          reject(map);
+        });
+    });
+  }
+
+  private readXLSX(file: Express.Multer.File) {
+    if (file.buffer) {
+      const workbook = xlsx.read(file.buffer, { type: "buffer" });
+
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      return this.mapUserToImportsXLSX(xlsx.utils.sheet_to_json(sheet) as Template[]);
+    } else {
+      return [];
     }
   }
 }

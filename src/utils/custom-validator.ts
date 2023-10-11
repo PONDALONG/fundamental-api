@@ -53,6 +53,8 @@ export function IsNumberStr(validationOptions?: ValidationOptions) {
             return !isNaN(Number(value));
           } else if (typeof value === "number") {
             return !isNaN(value);
+          } else {
+            return false;
           }
         },
         defaultMessage(args: ValidationArguments) {

@@ -14,7 +14,7 @@ export class User {
   @Column({ nullable: false, name: "name_en" })
   nameEN: string;
 
-  @Column({ unique: true, nullable: false, name: "student_no", length: 13 })
+  @Column({ unique: false, nullable: false, name: "student_no", length: 15 })
   studentNo: string;
 
   @Column({ nullable: false, name: "role", default: UserRole.STUDENT })

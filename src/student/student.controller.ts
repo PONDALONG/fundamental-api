@@ -55,7 +55,7 @@ export class StudentController {
     new ParseFilePipe({
       validators: [
         new MaxFileSizeValidator({ maxSize: 1000 * 1000 * 5 }),
-        new FileTypeValidator({ fileType: "csv" })
+        new FileTypeValidator({ fileType: "csv|vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
       ]
     })
   ) file: Express.Multer.File, @Body() body: any, @Request() req: any) {

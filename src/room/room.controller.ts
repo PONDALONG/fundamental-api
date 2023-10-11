@@ -1,5 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Request, UseGuards } from "@nestjs/common";
-import { FindFilter, RoomCreate } from "./dto/room.model";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Request,
+  UseGuards
+} from "@nestjs/common";
+import { RoomCreate, RoomUpdate } from "./dto/room.model";
 import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
@@ -33,6 +44,19 @@ export class RoomController {
   async findAll() {
     try {
       return await this.service.findAll();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("find")
+  @HttpCode(HttpStatus.OK)
+  async find(@Query("roomId") roomId: number) {
+    try {
+      const room = await this.service.findByRoomId(roomId);
+      if (!room) throw new BadRequestException("ไม่พบห้องเรียน");
+      return room;
     } catch (e) {
       throw e;
     }
@@ -92,7 +116,19 @@ export class RoomController {
   @UseGuards(AdminGuard)
   @Get("find-filter")
   @HttpCode(HttpStatus.OK)
-  async findFilter(@Body() input: FindFilter) {
-    return await this.service.findFilter(input);
+  async findFilter(@Query("term") term: number, @Query("year") year: number) {
+    return await this.service.findFilter(term, year);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post("update")
+  @HttpCode(HttpStatus.OK)
+  async update(@Body() input: RoomUpdate) {
+    try {
+      await this.service.update(input);
+      return this.response.ok();
+    } catch (e) {
+      throw e;
+    }
   }
 }

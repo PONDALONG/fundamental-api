@@ -5,7 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { RoomStatus } from "./dto/room.enum";
 import { StudentStatus } from "../student/dto/student.enum";
-import { Dropdown, FindFilter, RoomCreate } from "./dto/room.model";
+import { Dropdown, RoomCreate, RoomUpdate } from "./dto/room.model";
 
 @Injectable()
 export class RoomService {
@@ -18,13 +18,33 @@ export class RoomService {
 
   async create(input: RoomCreate) {
     try {
-      this.validateRoom(input);
-      await this.checkDuplicateRoom(input);
+      await this.checkDuplicateRoomCreate(input);
       const room = new Room();
-      room.roomDescription = input.roomDescription.trim();
       room.roomYear = input.roomYear;
-      room.roomGroup = input.roomGroup.trim();
+      room.roomGroup = input.roomGroup.trim().toUpperCase();
       room.roomTerm = input.roomTerm;
+      room.roomStatus = input.roomStatus;
+      try {
+        return await this.repository.save(room);
+      } catch (e) {
+        throw new BadRequestException("บันทึกข้อมูลผิดพลาด : " + e.message);
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async update(input: RoomUpdate) {
+    try {
+      const room = await this.findByRoomId(input.roomId);
+
+      if (!room) throw new BadRequestException("ไม่พบห้องเรียน");
+
+      await this.checkDuplicateRoomUpdate(input);
+      room.roomYear = input.roomYear;
+      room.roomGroup = input.roomGroup.trim().toUpperCase();
+      room.roomTerm = input.roomTerm;
+      room.roomStatus = input.roomStatus;
       try {
         return await this.repository.save(room);
       } catch (e) {
@@ -37,16 +57,34 @@ export class RoomService {
 
   /*------------------- MAIN FUNCTION -------------------*/
 
-  async checkDuplicateRoom(input: RoomCreate) {
+  async checkDuplicateRoomCreate(input: RoomCreate) {
     try {
       const room = await this.repository.findOne({
         where: {
           roomYear: input.roomYear,
-          roomGroup: input.roomGroup.trim(),
+          roomGroup: input.roomGroup.trim().toUpperCase(),
           roomTerm: input.roomTerm
         }
       });
       if (room) throw new BadRequestException("มีข้อมูลชื่อห้องเรียนนี้แล้ว");
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async checkDuplicateRoomUpdate(input: RoomUpdate) {
+    try {
+      const room = await this.repository.findOne({
+        where: {
+          roomYear: input.roomYear,
+          roomGroup: input.roomGroup.trim().toUpperCase(),
+          roomTerm: input.roomTerm
+        }
+      });
+
+      if (room && room.roomId != input.roomId)
+        throw new BadRequestException("มีข้อมูลชื่อห้องเรียนนี้แล้ว");
+
     } catch (e) {
       throw e;
     }
@@ -123,14 +161,13 @@ export class RoomService {
     }
   }
 
-  async findFilter(input: FindFilter) {
+  async findFilter(term: number, year: number) {
     try {
-      const result = await this.repository.find({
-        where: {
-          roomYear: input.year,
-          roomTerm: input.term
-        }
-      });
+      const result = await this.repository.createQueryBuilder("room")
+        .select(["room.roomId", "room.roomGroup", "room.roomYear", "room.roomTerm", "room.roomStatus"])
+        .where("room.roomTerm = :term AND room.roomYear = :year", { term: term, year: year })
+        .addOrderBy("room.roomGroup", "ASC")
+        .getMany();
       return result;
     } catch (e) {
       throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
@@ -139,23 +176,4 @@ export class RoomService {
 
   /*------------------- SUB FUNCTION -------------------*/
 
-  private validateRoom(data: RoomCreate) {
-    const errors: string[] = [];
-    if (!data.roomDescription || data.roomDescription.trim() == "") {
-      errors.push("roomDescription");
-    }
-    if (!data.roomYear) {
-      errors.push("roomYear");
-    }
-    if (!data.roomGroup || data.roomGroup.trim() == "") {
-      errors.push("roomGroup");
-    }
-    if (!data.roomTerm) {
-      errors.push("roomTerm");
-    }
-    if (errors.length > 0) {
-      throw new BadRequestException("กรุณาระบุ : " + errors.join(", "));
-    }
-
-  }
 }

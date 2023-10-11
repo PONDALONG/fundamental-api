@@ -1,9 +1,8 @@
 import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
+import { RoomStatus } from "./room.enum";
+import { IsEnum } from "class-validator";
 
 export class RoomCreate {
-
-  @IsBlankNull()
-  roomDescription: string;
 
   @IsNumberStr()
   roomYear: number;
@@ -13,6 +12,16 @@ export class RoomCreate {
 
   @IsNumberStr()
   roomTerm: number;
+
+  @IsEnum(RoomStatus)
+  roomStatus: RoomStatus;
+
+}
+
+export class RoomUpdate extends RoomCreate {
+
+  @IsNumberStr()
+  roomId: number;
 
 }
 

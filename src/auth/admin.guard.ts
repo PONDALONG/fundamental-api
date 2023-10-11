@@ -14,7 +14,7 @@ export class AdminGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    return true;
+    // return true;
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
@@ -30,8 +30,6 @@ export class AdminGuard implements CanActivate {
       const user = await this.userService.findOne(payload["userId"]);
       if (!user) throw new UnauthorizedException();
       if (user.role !== UserRole.TEACHER) throw new UnauthorizedException();
-
-      delete user.password;
 
       request["user"] = user;
     } catch {

@@ -4,7 +4,7 @@ import { UserRole, UserStatus } from "./user.enum";
 
 export class LoginRequest {
   @IsBlankNull()
-  studentId: string;
+  studentCode: string;
 
   @IsBlankNull()
   password: string;
@@ -48,7 +48,7 @@ export class UserToCsv {
 export class adminCreate {
   firstname = "admin";
   lastname = "admin";
-  studentNo = "00000000000-0";
+  studentNo = "admin";
   class = "admin";
   role = UserRole.TEACHER;
   userStatus = UserStatus.ACTIVE;

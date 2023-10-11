@@ -18,9 +18,6 @@ export class Room {
   @Column({ name: "room_term", nullable: false }) //unique
   roomTerm: number;
 
-  @Column({ name: "room_description", nullable: true, type: "longtext" })
-  roomDescription: string;
-
   @Column({ name: "room_status", nullable: false, default: RoomStatus.CLOSED })
   roomStatus: string;
 
