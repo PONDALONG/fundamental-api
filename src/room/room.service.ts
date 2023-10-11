@@ -5,7 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
 import { RoomStatus } from "./dto/room.enum";
 import { StudentStatus } from "../student/dto/student.enum";
-import { RoomCreate } from "./dto/room.model";
+import { Dropdown, FindFilter, RoomCreate } from "./dto/room.model";
 
 @Injectable()
 export class RoomService {
@@ -103,6 +103,38 @@ export class RoomService {
       roomGroup: roomGroup,
       roomYear: roomYear
     }).groupBy("room.roomTerm").getMany();
+  }
+
+  async dropdownFilter() {
+
+    try {
+
+      const roomsYears = await this.repository.createQueryBuilder("room").select(["room.roomYear"]).groupBy("room.roomYear").getMany();
+      const roomsTerm = await this.repository.createQueryBuilder("room").select(["room.roomTerm"]).groupBy("room.roomTerm").getMany();
+
+      const dropdown = new Dropdown();
+
+      for (const i of roomsYears) dropdown.years.push(i.roomYear);
+      for (const i of roomsTerm) dropdown.terms.push(i.roomTerm);
+
+      return dropdown;
+    } catch (e) {
+      throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
+    }
+  }
+
+  async findFilter(input:FindFilter){
+    try {
+      const result = await this.repository.find({
+        where:{
+          roomYear:input.year,
+          roomTerm:input.term
+        }
+      });
+      return result;
+    } catch (e) {
+      throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
+    }
   }
 
   /*------------------- SUB FUNCTION -------------------*/

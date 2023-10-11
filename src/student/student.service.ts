@@ -100,6 +100,30 @@ export class StudentService {
     }
   }
 
+  async findAll(roomYear: number, roomGroup: string, roomTerm: number) {
+
+    let result: Student[] = [];
+
+    try {
+      roomYear = roomYear || 0;
+      roomTerm = roomTerm || 0;
+      roomGroup = roomGroup || "";
+
+      result = await this.repository.createQueryBuilder("student")
+        .innerJoin("student.user", "user")
+        .innerJoin("student.room", "rm")
+        .where("rm.roomYear = :roomYear AND rm.roomGroup = :roomGroup AND rm.roomTerm = :roomTerm",
+          { roomYear, roomGroup, roomTerm }
+        )
+        .select(["student", "user"])
+        .getMany();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+
+    return result;
+  }
+
   async update(input: any) {
 
   }

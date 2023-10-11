@@ -15,3 +15,20 @@ export class RoomCreate {
   roomTerm: number;
 
 }
+
+export class Dropdown {
+
+  years: number[] = [];
+
+  terms: number[] = [];
+}
+
+
+export class FindFilter {
+
+  @IsNumberStr()
+  year: number;
+
+  @IsNumberStr()
+  term: number;
+}

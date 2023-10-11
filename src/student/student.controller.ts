@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
@@ -30,10 +31,19 @@ export class StudentController {
   // @UseGuards(AdminGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
-  async findAll(@Query("roomId") roomId?: number) {
-    //todo: find all
-    //todo : find all by room
-    return roomId;
+  async findAll(
+    @Query("roomYear") roomYear: number,
+    @Query("roomGroup") roomGroup: string,
+    @Query("roomTerm") roomTerm: number
+  ) {
+    try {
+      if (isNaN(+roomYear)) throw new BadRequestException("roomYear ไม่ถูกต้อง");
+      if (isNaN(+roomTerm)) throw new BadRequestException("roomTerm ไม่ถูกต้อง");
+
+      return await this.service.findAll(roomYear, roomGroup, roomTerm);
+    } catch (e) {
+      throw e;
+    }
   }
 
   @UseGuards(AdminGuard)

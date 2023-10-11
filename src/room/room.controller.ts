@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Request, UseGuards } from "@nestjs/common";
-import { RoomCreate } from "./dto/room.model";
+import { FindFilter, RoomCreate } from "./dto/room.model";
 import { RoomService } from "./room.service";
 import { Res } from "../utils/Res";
 import { AdminGuard } from "../auth/admin.guard";
@@ -80,5 +80,19 @@ export class RoomController {
     } catch (e) {
       throw e;
     }
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("dropdown-filter")
+  @HttpCode(HttpStatus.OK)
+  async dropdownFilter() {
+    return await this.service.dropdownFilter();
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("find-filter")
+  @HttpCode(HttpStatus.OK)
+  async findFilter(@Body() input: FindFilter) {
+    return await this.service.findFilter(input);
   }
 }
