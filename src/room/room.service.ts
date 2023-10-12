@@ -256,7 +256,7 @@ export class RoomService {
     return "\uFEFF" + csvHeader + csvData.join("");
   }
 
-  async exportReportScoreStudentEXCEL(roomId: number){
+  async exportReportScoreStudentEXCEL(roomId: number) {
 
   }
 

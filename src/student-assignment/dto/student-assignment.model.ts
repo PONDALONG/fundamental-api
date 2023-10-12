@@ -22,14 +22,11 @@ export class SendAssignmentRequest {
 
 export class FormIntoGroups {
 
-  @IsNumberStr()
-  assignmentId: number;
-
   @IsBlankNull()
   stdAsmGroup: string;
 
   @IsBlankNull()
-  stdAsmIds: number[];
+  stdAsmId: number;
 }
 
 export class GroupAssignment {

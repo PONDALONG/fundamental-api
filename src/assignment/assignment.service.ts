@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
 import { Assignment } from "./entities/assignment.entity";
-import { AssignmentStatus, AssignmentType } from "./dto/assignment.enum";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 import { Room } from "../room/entities/room.entity";
@@ -124,9 +123,6 @@ export class AssignmentService {
 
     if (!assignment) throw new BadRequestException("ไม่พบข้อมูล");
 
-    // validate input
-    // this.validateUpdateInput(input);
-
     if (!!files["files"]) {
 
       listFile = files["files"];
@@ -176,7 +172,7 @@ export class AssignmentService {
         await queryRunner.manager.save(fileResource);
       }
 
-      if (JSON.parse(input.deleteFileIds).length > 0) {
+      if (input.deleteFileIds && JSON.parse(input.deleteFileIds).length > 0) {
         const fileResources = await this.fileResourceRepository.find({
           where: {
             fileResourceId: In(JSON.parse(input.deleteFileIds)),
@@ -246,6 +242,7 @@ export class AssignmentService {
 
     try {
       const assignment = await this.repository.findOne({
+        relations: ["fileResources"],
         where: {
           assignmentId: assignmentId
         }

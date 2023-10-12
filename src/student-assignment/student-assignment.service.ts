@@ -99,24 +99,25 @@ export class StudentAssignmentService {
 
   }
 
-  async formIntoGroups(input: FormIntoGroups) {
-    const existAsm = await this.assignmentRepository.exist({
-      where: {
-        assignmentId: input.assignmentId
-      }
-    });
-    if (!existAsm) {
-      throw new BadRequestException("ไม่พบข้อมูล แบบฝึกหัด");
-    }
+  async formIntoGroups(inputs: FormIntoGroups[]) {
 
-    const stdAsms = await this.repository.find({
-      where: {
-        stdAsmId: In(input.stdAsmIds)
-      }
-    });
+    const stdAsms: StudentAssignment[] = Array<StudentAssignment>();
+    for (const input of inputs) {
+      try {
+        const stdAsm = await this.repository.findOne({
+          where: {
+            stdAsmId: input.stdAsmId
+          }
+        });
 
-    for (const stdAsm of stdAsms) {
-      stdAsm.stdAsmGroup = input.stdAsmGroup;
+        if (!stdAsm) throw new BadRequestException("ไม่พบข้อมูล แบบฝึกหัด");
+
+        stdAsm.stdAsmGroup = input.stdAsmGroup;
+        stdAsms.push(stdAsm);
+
+      } catch (e) {
+        throw new BadRequestException(e.message);
+      }
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -128,7 +129,7 @@ export class StudentAssignmentService {
       await queryRunner.commitTransaction();
     } catch (e) {
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.message);
     } finally {
       await queryRunner.release();
     }

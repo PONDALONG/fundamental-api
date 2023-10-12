@@ -52,7 +52,7 @@ export class StudentAssignmentController {
   @UseGuards(AdminGuard)
   @Post("form-into-groups")
   @HttpCode(HttpStatus.OK)
-  async formIntoGroups(@Body() input: FormIntoGroups) {
+  async formIntoGroups(@Body() input: FormIntoGroups[]) {
     await this.service.formIntoGroups(input);
     return this.response.ok();
   }
