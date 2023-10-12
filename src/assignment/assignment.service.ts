@@ -101,6 +101,7 @@ export class AssignmentService {
       await db.manager.save(studentAssignments);
 
       await db.commitTransaction();
+      return { assignmentId: assignmentSave.assignmentId, message: "บันทึกข้อมูลสำเร็จ" };
     } catch (err) {
       await db.rollbackTransaction();
       throw new BadRequestException("บันทึกข้อมูลไม่สำเร็จ : " + err.message);

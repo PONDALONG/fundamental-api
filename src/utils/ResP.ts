@@ -1,5 +1,5 @@
 export class ResP {
-  ok(message: string = "success") {
+  ok(message: string = "บันทึกสำเร็จ") {
     return { message: message };
   }
 }

@@ -35,8 +35,7 @@ export class AssignmentController {
   ]))
   async create(@UploadedFiles(
   ) files: Array<Express.Multer.File>, @Body() input: CreateAssignment) {
-    await this.service.create(files, input);
-    return this.response.ok();
+    return await this.service.create(files, input);
   }
 
   @UseGuards(AdminGuard)
@@ -69,7 +68,6 @@ export class AssignmentController {
       throw e;
     }
   }
-
 
   @UseGuards(AuthGuard)
   @Get("find")

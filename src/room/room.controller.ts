@@ -123,6 +123,23 @@ export class RoomController {
   }
 
   @UseGuards(AdminGuard)
+  @Get("find-YGT")
+  @HttpCode(HttpStatus.OK)
+  async findYGT(
+    @Query("roomYear") roomYear: number,
+    @Query("roomGroup") roomGroup: string,
+    @Query("roomTerm") roomTerm: number
+  ) {
+    try {
+      if (isNaN(+roomYear)) throw new BadRequestException("roomYear ไม่ถูกต้อง");
+      if (isNaN(+roomTerm)) throw new BadRequestException("roomTerm ไม่ถูกต้อง");
+      return await this.service.findYGT(roomYear, roomGroup, roomTerm);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
   @Post("update")
   @HttpCode(HttpStatus.OK)
   async update(@Body() input: RoomUpdate) {
@@ -148,13 +165,20 @@ export class RoomController {
   // @UseGuards(AdminGuard)
   @Get("export-report-score-student")
   @HttpCode(HttpStatus.OK)
-  async exportReportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number) {
+  async exportReportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number, @Query("type") type: string) {
     try {
-      const csvContent = await this.service.exportReportScoreStudentCSV(roomId);
-      console.log(csvContent);
-      res.setHeader("Content-disposition", "attachment; filename=data.csv");
-      res.set("Content-Type", "text/csv");
-      res.send(csvContent);
+      if (isNaN(+roomId)) throw new BadRequestException("roomId ไม่ถูกต้อง");
+
+      if (type !== "csv" && type !== "excel") throw new BadRequestException("type ไม่ถูกต้อง");
+
+      const result = type !== "csv" ? await this.service.exportReportScoreStudentEXCEL(roomId) : await this.service.exportReportScoreStudentCSV(roomId);
+
+      const contentType = type === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+      res.setHeader("Content-disposition", "attachment; filename=" + result.filename);
+      res.setHeader("Content-Type", contentType);
+
+      res.send(result.file);
     } catch (e) {
       throw e;
     }

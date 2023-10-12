@@ -7,6 +7,7 @@ import { RoomStatus } from "./dto/room.enum";
 import { StudentStatus } from "../student/dto/student.enum";
 import { Dropdown, RoomCreate, RoomUpdate } from "./dto/room.model";
 import * as createCsvStringifier from "csv-writer";
+import * as ExcelJS from "exceljs";
 
 @Injectable()
 export class RoomService {
@@ -215,10 +216,6 @@ export class RoomService {
   async exportReportScoreStudentCSV(roomId: number) {
     const room = await this.reportScoreStudent(roomId);
 
-    /*
-    STUDENT_NO	FULLNAME	FULLNAME_EN	LAB1	LAB2	LAB3	LAB4	LAB5	LAB6	LAB7	LAB8	LAB9	LAB10	TOTAL
-
-     */
     const HEADER = [
       { id: "id", title: "STUDENT_NO" },
       { id: "name", title: "FULLNAME" },
@@ -253,13 +250,79 @@ export class RoomService {
     const csvData = data.map((item) => csvStringifier.stringifyRecords([item]));
     const csvHeader = csvStringifier.getHeaderString();
 
-    return "\uFEFF" + csvHeader + csvData.join("");
+    return {
+      file: "\uFEFF" + csvHeader + csvData.join(""),
+      filename: room.roomGroup + "-" + room.roomYear + "-" + room.roomTerm + ".csv"
+    };
   }
 
   async exportReportScoreStudentEXCEL(roomId: number) {
+    const room = await this.reportScoreStudent(roomId);
 
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(room.roomGroup + "-" + room.roomYear + "-" + room.roomTerm);
+
+    // Define headers
+    const HEADER = [
+      { id: "id", title: "STUDENT_NO", width: 15 },
+      { id: "name", title: "FULLNAME", width: 30 },
+      { id: "email", title: "FULLNAME_EN", width: 35 }
+    ];
+
+    for (const assignment of room.assignments) {
+      HEADER.push({ id: assignment.assignmentId.toString(), title: assignment.assignmentName, width: 10 });
+    }
+
+    HEADER.push({ id: "total", title: "TOTAL", width: 10 });
+
+    // Add headers and set column widths
+    const headerRow = worksheet.addRow(HEADER.map(header => header.title));
+    headerRow.font = { bold: true };
+    HEADER.forEach((header, index) => {
+      worksheet.getColumn(index + 1).width = header.width;
+    });
+
+    // Add data to the worksheet
+    room.students.forEach(student => {
+      const item = {
+        id: student.user.studentNo,
+        name: student.user.nameTH,
+        email: student.user.nameEN
+      };
+
+      let total = 0;
+
+      for (const assignment of student.studentAssignments) {
+        item[assignment.assignment.assignmentId.toString()] = assignment.stdAsmScore;
+        total += assignment.stdAsmScore;
+      }
+
+      item["total"] = total;
+
+      worksheet.addRow(HEADER.map(header => item[header.id]));
+    });
+
+    // Generate the XLSX file as a buffer
+    return {
+      file: await workbook.xlsx.writeBuffer(),
+      filename: room.roomGroup + "-" + room.roomYear + "-" + room.roomTerm + ".xlsx"
+    };
   }
 
   /*------------------- SUB FUNCTION -------------------*/
 
+  async findYGT(roomYear: number, roomGroup: string, roomTerm: number) {
+
+    try {
+      return await this.repository.createQueryBuilder("room")
+        .where(
+          "room.roomYear = :roomYear AND room.roomGroup = :roomGroup AND room.roomTerm = :roomTerm",
+          { roomYear, roomGroup, roomTerm }
+        )
+        .select("room.roomId")
+        .getOne();
+    } catch (e) {
+      throw e;
+    }
+  }
 }
