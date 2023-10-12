@@ -63,4 +63,12 @@ export class StudentAssignmentController {
   async updateMyAssignments(@Request() auth: any) {
     await this.service.updateMyAssignments(auth.user);
   }
+
+  @UseGuards(AdminGuard)
+  @Get("find-student")
+  @HttpCode(HttpStatus.OK)
+  async findStudent(@Query("assignmentId") assignmentId: number) {
+    return await this.service.findStudent(assignmentId);
+  }
+
 }

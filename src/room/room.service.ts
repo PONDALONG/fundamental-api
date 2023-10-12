@@ -212,7 +212,7 @@ export class RoomService {
     return room;
   }
 
-  async exportReportScoreStudent(roomId: number) {
+  async exportReportScoreStudentCSV(roomId: number) {
     const room = await this.reportScoreStudent(roomId);
 
     /*
@@ -254,6 +254,10 @@ export class RoomService {
     const csvHeader = csvStringifier.getHeaderString();
 
     return "\uFEFF" + csvHeader + csvData.join("");
+  }
+
+  async exportReportScoreStudentEXCEL(roomId: number){
+
   }
 
   /*------------------- SUB FUNCTION -------------------*/

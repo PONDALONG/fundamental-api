@@ -150,7 +150,7 @@ export class RoomController {
   @HttpCode(HttpStatus.OK)
   async exportReportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number) {
     try {
-      const csvContent = await this.service.exportReportScoreStudent(roomId);
+      const csvContent = await this.service.exportReportScoreStudentCSV(roomId);
       console.log(csvContent);
       res.setHeader("Content-disposition", "attachment; filename=data.csv");
       res.set("Content-Type", "text/csv");

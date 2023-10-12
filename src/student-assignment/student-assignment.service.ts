@@ -302,6 +302,21 @@ export class StudentAssignmentService {
     }
   }
 
+  async findStudent(assignmentId: number) {
+    try {
+      return await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .select(["stdAsm.stdAsmId", "stdAsm.stdAsmGroup", "student.studentId", "user.nameTH", "user.nameEN"])
+        .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
+        .getMany();
+    } catch (e) {
+      throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
+    }
+  }
+
   /*------------------- SUB FUNCTION -------------------*/
+
 
 }
