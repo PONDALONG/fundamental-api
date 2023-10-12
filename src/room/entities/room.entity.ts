@@ -36,6 +36,6 @@ export class Room {
 
   //room 1-n student
   @OneToMany(() => Student, x => x.room)
-  studentRooms: Student[];
+  students: Student[];
 
 }

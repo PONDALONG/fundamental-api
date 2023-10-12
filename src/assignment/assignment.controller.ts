@@ -8,22 +8,26 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors
 } from "@nestjs/common";
 import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { AssignmentService } from "./assignment.service";
-import { Res } from "../utils/Res";
+import { ResP } from "../utils/ResP";
+import { AdminGuard } from "../auth/admin.guard";
+import { AuthGuard } from "../auth/auth.guard";
 
 @Controller("assignment")
 export class AssignmentController {
-  private readonly response = new Res();
+  private readonly response = new ResP();
 
   constructor(
     private readonly service: AssignmentService
   ) {
   }
 
+  @UseGuards(AdminGuard)
   @Post("create")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileFieldsInterceptor([
@@ -35,6 +39,7 @@ export class AssignmentController {
     return this.response.ok();
   }
 
+  @UseGuards(AdminGuard)
   @Post("update")
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileFieldsInterceptor([
@@ -45,6 +50,7 @@ export class AssignmentController {
     return this.response.ok();
   }
 
+  @UseGuards(AdminGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findByRoom(
@@ -59,6 +65,19 @@ export class AssignmentController {
       if (isNaN(+roomTerm)) throw new BadRequestException("roomTerm ไม่ถูกต้อง");
 
       return await this.service.findAll(roomYear, roomGroup, roomTerm);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+
+  @UseGuards(AuthGuard)
+  @Get("find")
+  @HttpCode(HttpStatus.OK)
+  async find(@Query("assignmentId") assignmentId: number) {
+    try {
+      if (isNaN(+assignmentId)) throw new BadRequestException("assignmentId ไม่ถูกต้อง");
+      return await this.service.find(assignmentId);
     } catch (e) {
       throw e;
     }

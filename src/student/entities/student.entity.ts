@@ -17,7 +17,7 @@ export class Student {
   studentStatus: string;
 
   //student n-1 room
-  @ManyToOne(() => Room, x => x.studentRooms)
+  @ManyToOne(() => Room, x => x.students)
   @JoinColumn({ name: "room_id", referencedColumnName: "roomId" })
   room: Room;
 

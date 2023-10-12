@@ -19,14 +19,14 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
-import { Res } from "../utils/Res";
+import { ResP } from "../utils/ResP";
 import { ChangePassword, LoginRequest, resetPassword } from "./dto/user.model";
 import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
-  private readonly response = new Res();
+  private readonly response = new ResP();
 
   constructor(
     private readonly service: UserService

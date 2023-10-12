@@ -276,7 +276,7 @@ export class StudentAssignmentService {
 
       const stdAsms: StudentAssignment[] = Array<StudentAssignment>();
 
-      const assignments = await this.assignmentRepository.find({ where: { room: { studentRooms: { user: user } } } });
+      const assignments = await this.assignmentRepository.find({ where: { room: { students: { user: user } } } });
 
       if (assignments.length == 0) throw new Error("ไม่มีรายการให้อัพเดท");
 

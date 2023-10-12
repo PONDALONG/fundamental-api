@@ -14,14 +14,14 @@ import {
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { StudentAssignmentService } from "./student-assignment.service";
-import { Res } from "../utils/Res";
+import { ResP } from "../utils/ResP";
 import { CheckStdAsm, FormIntoGroups } from "./dto/student-assignment.model";
 
 @Controller("student-assignment")
 @UseInterceptors(ClassSerializerInterceptor)
 export class StudentAssignmentController {
 
-  private readonly response = new Res();
+  private readonly response = new ResP();
 
   constructor(
     private readonly service: StudentAssignmentService

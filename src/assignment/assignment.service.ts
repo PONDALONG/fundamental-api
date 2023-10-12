@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
 import { Assignment } from "./entities/assignment.entity";
@@ -242,115 +242,22 @@ export class AssignmentService {
     return result;
   }
 
+  async find(assignmentId: number) {
+
+    try {
+      const assignment = await this.repository.findOne({
+        where: {
+          assignmentId: assignmentId
+        }
+      });
+      if (!assignment) throw new NotFoundException("ไม่พบข้อมูล");
+
+      return assignment;
+
+    } catch (e) {
+      throw e;
+    }
+  }
 
   /*------------------- SUB FUNCTION -------------------*/
-
-  private validateCreateInput(input: CreateAssignment) {
-    let errors: string[] = [];
-    const msgErrors: string[] = [];
-
-    if (!input.assignmentName || input.assignmentName.trim() == "") {
-      errors.push("assignmentName");
-    }
-
-    if (!input.assignmentDescription || input.assignmentDescription.trim() == "") {
-      errors.push("assignmentDescription");
-    }
-
-    if (!input.assignmentScore) {
-      errors.push("assignmentScore");
-    }
-
-    if (!input.assignmentStatus || input.assignmentStatus.trim() == "") {
-      errors.push("assignmentStatus");
-    }
-
-    if (!input.assignmentType || input.assignmentType.trim() == "") {
-      errors.push("assignmentType");
-    }
-
-    if (!input.roomId) {
-      errors.push("roomId");
-    }
-
-    if (errors.length > 0) {
-      msgErrors.push("กรุณาระบุ : " + errors.join(", "));
-      errors = [];
-    }
-
-    if (!!input.assignmentType && input.assignmentType.trim() != "") {
-      if (!Object.values(AssignmentType).includes(input.assignmentType)) {
-        errors.push("assignmentType");
-      }
-    }
-
-    if (!!input.assignmentStatus && input.assignmentStatus.trim() != "") {
-      if (!Object.values(AssignmentStatus).includes(input.assignmentStatus)) {
-        errors.push("assignmentStatus");
-      }
-    }
-
-    if (errors.length > 0) {
-      msgErrors.push(errors.join(", ") + " ไม่ถูกต้อง");
-      errors = [];
-    }
-
-    if (msgErrors.length > 0) {
-      throw new BadRequestException(msgErrors.join(" | "));
-    }
-  }
-
-  private validateUpdateInput(input: UpdateAssignment) {
-    let errors: string[] = [];
-    const msgErrors: string[] = [];
-    if (!input.assignmentId) {
-      errors.push("assignmentId");
-    }
-
-    if (!input.assignmentName || input.assignmentName.trim() == "") {
-      errors.push("assignmentName");
-    }
-
-    if (!input.assignmentDescription || input.assignmentDescription.trim() == "") {
-      errors.push("assignmentDescription");
-    }
-
-    if (!input.assignmentScore) {
-      errors.push("assignmentScore");
-    }
-
-    if (!input.assignmentStatus || input.assignmentStatus.trim() == "") {
-      errors.push("assignmentStatus");
-    }
-
-    if (!input.assignmentType || input.assignmentType.trim() == "") {
-      errors.push("assignmentType");
-    }
-
-    if (errors.length > 0) {
-      msgErrors.push("กรุณาระบุ : " + errors.join(", "));
-      errors = [];
-    }
-
-    if (!!input.assignmentType && input.assignmentType.trim() != "") {
-      if (!Object.values(AssignmentType).includes(input.assignmentType)) {
-        errors.push("assignmentType");
-      }
-    }
-
-    if (!!input.assignmentStatus && input.assignmentStatus.trim() != "") {
-      if (!Object.values(AssignmentStatus).includes(input.assignmentStatus)) {
-        errors.push("assignmentStatus");
-      }
-    }
-
-    if (errors.length > 0) {
-      msgErrors.push(errors.join(", ") + " ไม่ถูกต้อง");
-      errors = [];
-    }
-
-    if (msgErrors.length > 0) {
-      throw new BadRequestException(msgErrors.join(" | "));
-    }
-  }
 }

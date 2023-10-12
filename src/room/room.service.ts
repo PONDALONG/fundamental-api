@@ -6,6 +6,7 @@ import { User } from "../user/entities/user.entity";
 import { RoomStatus } from "./dto/room.enum";
 import { StudentStatus } from "../student/dto/student.enum";
 import { Dropdown, RoomCreate, RoomUpdate } from "./dto/room.model";
+import * as createCsvStringifier from "csv-writer";
 
 @Injectable()
 export class RoomService {
@@ -116,7 +117,7 @@ export class RoomService {
     return await this.repository.find(
       {
         where: {
-          studentRooms: {
+          students: {
             studentStatus: StudentStatus.ACTIVE,
             user: {
               userId: user.userId
@@ -129,18 +130,29 @@ export class RoomService {
   }
 
   async findAllGroup() {
-    return await this.repository.createQueryBuilder("room").select(["room.roomGroup"]).groupBy("room.roomGroup").getMany();
+    return await this.repository.createQueryBuilder("room")
+      .select(["room.roomGroup"])
+      .addOrderBy("room.roomGroup", "ASC")
+      .groupBy("room.roomGroup")
+      .getMany();
   }
 
   async findAllYearByGroup(roomGroup: string) {
-    return await this.repository.createQueryBuilder("room").select(["room.roomYear"]).where("room.roomGroup = :roomGroup", { roomGroup: roomGroup }).groupBy("room.roomYear").getMany();
+    return await this.repository.createQueryBuilder("room")
+      .select(["room.roomYear"])
+      .where("room.roomGroup = :roomGroup", { roomGroup: roomGroup })
+      .addOrderBy("room.roomYear", "ASC")
+      .groupBy("room.roomYear")
+      .getMany();
   }
 
   async findAllTermByGroupAndYear(roomGroup: string, roomYear: number) {
-    return await this.repository.createQueryBuilder("room").select(["room.roomTerm"]).where("room.roomGroup = :roomGroup AND room.roomYear = :roomYear", {
-      roomGroup: roomGroup,
-      roomYear: roomYear
-    }).groupBy("room.roomTerm").getMany();
+    return await this.repository.createQueryBuilder("room")
+      .select(["room.roomTerm"])
+      .where("room.roomGroup = :roomGroup AND room.roomYear = :roomYear", { roomGroup: roomGroup, roomYear: roomYear })
+      .groupBy("room.roomTerm")
+      .addOrderBy("room.roomTerm", "ASC")
+      .getMany();
   }
 
   async dropdownFilter() {
@@ -172,6 +184,76 @@ export class RoomService {
     } catch (e) {
       throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
     }
+  }
+
+  async reportScoreStudent(roomId: number) {
+    const room = await this.repository.createQueryBuilder("rm")
+      .leftJoin("rm.assignments", "asm")
+      .leftJoin("rm.students", "std")
+      .leftJoin("std.user", "user")
+      .leftJoin("std.studentAssignments", "stdAsm", "stdAsm.assignment = asm.assignmentId")
+      .leftJoin("stdAsm.assignment", "asm2")
+      .where("rm.roomId = :roomId", { roomId: roomId })
+      .select([
+        "rm",
+        "asm.assignmentId", "asm.assignmentName", "asm.assignmentScore",
+        "std.studentId",
+        "user.studentNo", "user.nameTH", "user.nameEN",
+        "stdAsm.stdAsmId", "stdAsm.stdAsmScore",
+        "asm2.assignmentId", "asm2.assignmentName"
+      ])
+      .orderBy("user.studentNo", "ASC")
+      .orderBy("asm.assignmentId", "ASC")
+      .orderBy("stdAsm.assignment.assignmentId", "ASC")
+      .getOne();
+
+    if (!room) throw new BadRequestException("ไม่พบข้อมูลห้องเรียน");
+
+    return room;
+  }
+
+  async exportReportScoreStudent(roomId: number) {
+    const room = await this.reportScoreStudent(roomId);
+
+    /*
+    STUDENT_NO	FULLNAME	FULLNAME_EN	LAB1	LAB2	LAB3	LAB4	LAB5	LAB6	LAB7	LAB8	LAB9	LAB10	TOTAL
+
+     */
+    const HEADER = [
+      { id: "id", title: "STUDENT_NO" },
+      { id: "name", title: "FULLNAME" },
+      { id: "email", title: "FULLNAME_EN" }
+    ];
+
+    for (const assignment of room.assignments) {
+      HEADER.push({ id: assignment.assignmentId.toString(), title: assignment.assignmentName });
+    }
+
+    HEADER.push({ id: "total", title: "TOTAL" });
+
+    const csvStringifier = createCsvStringifier.createObjectCsvStringifier({ header: HEADER });
+
+    const data = room.students.map((student) => {
+      const item = {
+        id: student.user.studentNo,
+        name: student.user.nameTH,
+        email: student.user.nameEN
+      };
+
+      let total = 0;
+      for (const assignment of student.studentAssignments) {
+        item[assignment.assignment.assignmentId.toString()] = assignment.stdAsmScore;
+        total += assignment.stdAsmScore;
+      }
+      item["total"] = total;
+
+      return item;
+    });
+
+    const csvData = data.map((item) => csvStringifier.stringifyRecords([item]));
+    const csvHeader = csvStringifier.getHeaderString();
+
+    return "\uFEFF" + csvHeader + csvData.join("");
   }
 
   /*------------------- SUB FUNCTION -------------------*/

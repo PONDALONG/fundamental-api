@@ -8,18 +8,20 @@ import {
   Post,
   Query,
   Request,
+  Res,
   UseGuards
 } from "@nestjs/common";
 import { RoomCreate, RoomUpdate } from "./dto/room.model";
 import { RoomService } from "./room.service";
-import { Res } from "../utils/Res";
+import { ResP } from "../utils/ResP";
 import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "../user/entities/user.entity";
+import { Response } from "express";
 
 @Controller("room")
 export class RoomController {
-  private readonly response = new Res();
+  private readonly response = new ResP();
 
   constructor(
     private readonly service: RoomService
@@ -127,6 +129,32 @@ export class RoomController {
     try {
       await this.service.update(input);
       return this.response.ok();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("report-score-student")
+  @HttpCode(HttpStatus.OK)
+  async reportScoreStudent(@Query("roomId") roomId: number) {
+    try {
+      return await this.service.reportScoreStudent(roomId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // @UseGuards(AdminGuard)
+  @Get("export-report-score-student")
+  @HttpCode(HttpStatus.OK)
+  async exportReportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number) {
+    try {
+      const csvContent = await this.service.exportReportScoreStudent(roomId);
+      console.log(csvContent);
+      res.setHeader("Content-disposition", "attachment; filename=data.csv");
+      res.set("Content-Type", "text/csv");
+      res.send(csvContent);
     } catch (e) {
       throw e;
     }
