@@ -163,9 +163,9 @@ export class RoomController {
   }
 
   // @UseGuards(AdminGuard)
-  @Get("export-report-score-student")
+  @Get("export-score-student")
   @HttpCode(HttpStatus.OK)
-  async exportReportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number, @Query("type") type: string) {
+  async exportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number, @Query("type") type: string) {
     try {
       if (isNaN(+roomId)) throw new BadRequestException("roomId ไม่ถูกต้อง");
 

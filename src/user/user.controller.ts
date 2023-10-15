@@ -56,6 +56,7 @@ export class UserController {
   async changePassword(@Request() auth: any, @Body() input: ChangePassword) {
     try {
       await this.service.changePassword(auth.user, input);
+      return this.response.ok();
     } catch (e) {
       throw e;
     }

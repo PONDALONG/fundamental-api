@@ -93,10 +93,10 @@ export class UserService {
 
       const destinationPath = `${Constant.UPLOAD_PATH_PROFILE}/${user.studentNo}.${file.originalname.split(".").pop()}`;
 
-      createWriteStream(path.resolve(destinationPath)).write(file.buffer);
+      createWriteStream(path.resolve(Constant.PUBLIC_PATH + "/" + destinationPath)).write(file.buffer);
 
       user.image = destinationPath;
-      return { image: (await this.repository.save(user)).image };
+      return await this.repository.save(user);
     } catch (e) {
       throw new BadRequestException("บันทึกข้อมูลผิดพลาด");
     }
@@ -137,9 +137,11 @@ export class UserService {
     }
   }
 
-  async changePassword(user: User, input: ChangePassword) {
+  async changePassword(userInput: User, input: ChangePassword) {
 
     try {
+
+      const user = await this.repository.findOne({ where: { userId: userInput.userId } });
 
       if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
 

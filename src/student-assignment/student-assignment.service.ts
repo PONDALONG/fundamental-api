@@ -57,21 +57,31 @@ export class StudentAssignmentService {
     });
 
     if (!assignment) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+    const data = await this.repository.createQueryBuilder("stdAsm")
+      .innerJoin("stdAsm.student", "student")
+      .innerJoin("student.user", "user")
+      .innerJoin("stdAsm.assignment", "assignment")
+      .select([
+        "stdAsm.stdAsmId", "stdAsm.stdAsmStatus", "stdAsm.stdAsmGroup", "stdAsm.stdAsmDateTime", "stdAsm.stdAsmScore",
+        "student.studentId",
+        "user.nameTH", "user.nameEN", "user.studentNo"
+      ])
+      .where("stdAsm.assignment.assignmentId = :assignmentId", assignment)
+      .orderBy(
+        assignment.assignmentType === AssignmentType.INDIVIDUAL
+          ? "user.studentNo"
+          : "IF(stdAsm.stdAsmGroup IS NULL, 99999999999, stdAsm.stdAsmGroup)",
+        "ASC")
+      .addOrderBy(
+        assignment.assignmentType === AssignmentType.INDIVIDUAL
+          ? "user.studentNo"
+          : "stdAsm.stdAsmDateTime",
+        assignment.assignmentType === AssignmentType.INDIVIDUAL
+          ? "ASC"
+          : "DESC"
+      )
+      .getMany();
 
-    // const data = await this.repository.createQueryBuilder("stdAsm")
-    //   .innerJoin("stdAsm.assignment", "assignment")
-    //   .innerJoin("stdAsm.student", "student")
-    //   .innerJoin("student.user", "user")
-    //   .select(["stdAsm", "student", "user"])
-    //   .where("assignment.assignmentId = :assignmentId", assignment)
-    //   .getMany();
-
-    const data = await this.repository.find({
-      relations: ["student", "student.user"],
-      where: {
-        assignment: assignment
-      }
-    });
 
     if (assignment.assignmentType === AssignmentType.INDIVIDUAL) return data;
 
@@ -152,6 +162,8 @@ export class StudentAssignmentService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    if (stdAsm.assignment.assignmentScore < input.stdAsmScore) throw new BadRequestException("คะแนนที่ให้มากกว่าคะแนนเต็ม");
+
     if (stdAsm.assignment.assignmentType === AssignmentType.INDIVIDUAL) {
 
       stdAsm.stdAsmScore = input.stdAsmScore;
@@ -164,7 +176,7 @@ export class StudentAssignmentService {
 
         await this.repository.query(query, [input.stdAsmScore, stdAsm.stdAsmGroup, stdAsm.assignment.assignmentId]);
       } catch (error) {
-        throw new Error(`Error updating rows: ${error.message}`);
+        throw new BadRequestException(`บันทึกข้อมูลผิดพลาด: ${error.message}`);
       }
     }
   }
@@ -305,12 +317,23 @@ export class StudentAssignmentService {
 
   async findStudent(assignmentId: number) {
     try {
+
+      const assignment = await this.assignmentRepository.findOne({
+        where: {
+          assignmentId: assignmentId
+        }
+      });
+
+      if (!assignment) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+
       return await this.repository.createQueryBuilder("stdAsm")
         .innerJoin("stdAsm.assignment", "assignment")
         .innerJoin("stdAsm.student", "student")
         .innerJoin("student.user", "user")
-        .select(["stdAsm.stdAsmId", "stdAsm.stdAsmGroup", "student.studentId", "user.nameTH", "user.nameEN"])
+        .select(["stdAsm.stdAsmId", "stdAsm.stdAsmGroup", "student.studentId", "user.nameTH", "user.nameEN", "user.studentNo"])
         .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
+        .orderBy("IF(stdAsm.stdAsmGroup IS NULL, 99999999999, stdAsm.stdAsmGroup)", "ASC")
+        .addOrderBy("user.studentNo", "ASC")
         .getMany();
     } catch (e) {
       throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);

@@ -2,8 +2,6 @@ import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
 import { StudentAssignment } from "../entities/student-assignment.entity";
 
 export class CheckStdAsm {
-  @IsNumberStr()
-  assignmentId: number;
 
   @IsNumberStr()
   stdAsmId: number;

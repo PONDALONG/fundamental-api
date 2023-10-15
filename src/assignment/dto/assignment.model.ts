@@ -7,7 +7,6 @@ export class CreateAssignment {
   @IsBlankNull()
   assignmentName: string;
 
-  // @IsBlankNull()
   assignmentDescription: string;
 
   @IsNumberStr()
