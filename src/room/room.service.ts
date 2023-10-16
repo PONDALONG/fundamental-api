@@ -213,6 +213,40 @@ export class RoomService {
     return room;
   }
 
+  async mapReport(roomId: number) {
+    const room = await this.reportScoreStudent(roomId);
+
+    const HEADER = [
+      { id: "id", title: "STUDENT_NO" },
+      { id: "name", title: "FULLNAME" },
+      { id: "email", title: "FULLNAME_EN" }
+    ];
+
+    for (const assignment of room.assignments) {
+      HEADER.push({ id: assignment.assignmentId.toString(), title: assignment.assignmentName });
+    }
+
+    HEADER.push({ id: "total", title: "TOTAL" });
+    const data = room.students.map((student) => {
+      const item = {
+        id: student.user.studentNo,
+        name: student.user.nameTH,
+        email: student.user.nameEN
+      };
+
+      let total = 0;
+      for (const assignment of student.studentAssignments) {
+        item[assignment.assignment.assignmentId.toString()] = assignment.stdAsmScore;
+        total += assignment.stdAsmScore;
+      }
+      item["total"] = total;
+
+      return item;
+    });
+
+    return { data: data, header: HEADER };
+  }
+
   async exportReportScoreStudentCSV(roomId: number) {
     const room = await this.reportScoreStudent(roomId);
 
@@ -275,7 +309,6 @@ export class RoomService {
 
     HEADER.push({ id: "total", title: "TOTAL", width: 10 });
 
-    // Add headers and set column widths
     const headerRow = worksheet.addRow(HEADER.map(header => header.title));
     headerRow.font = { bold: true };
     HEADER.forEach((header, index) => {

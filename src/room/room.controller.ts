@@ -156,7 +156,7 @@ export class RoomController {
   @HttpCode(HttpStatus.OK)
   async reportScoreStudent(@Query("roomId") roomId: number) {
     try {
-      return await this.service.reportScoreStudent(roomId);
+      return await this.service.mapReport(roomId);
     } catch (e) {
       throw e;
     }

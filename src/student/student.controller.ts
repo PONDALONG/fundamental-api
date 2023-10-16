@@ -11,7 +11,6 @@ import {
   ParseFilePipe,
   Post,
   Query,
-  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors
@@ -19,7 +18,6 @@ import {
 import { StudentService } from "./student.service";
 import { AdminGuard } from "../auth/admin.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { RoomCreate } from "../room/dto/room.model";
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller("student")
@@ -58,18 +56,11 @@ export class StudentController {
         new FileTypeValidator({ fileType: "csv|vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
       ]
     })
-  ) file: Express.Multer.File, @Body() body: any, @Request() req: any) {
+  ) file: Express.Multer.File, @Body() body: any) {
     try {
       return await this.service.import(file, body.roomId);
     } catch (e) {
       throw e;
     }
-  }
-
-  @UseGuards(AdminGuard)
-  @Post("update")
-  @HttpCode(HttpStatus.OK)
-  async update(@Body() body: RoomCreate) {
-    //todo: update
   }
 }

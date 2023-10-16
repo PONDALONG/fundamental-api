@@ -3,11 +3,12 @@ services:
   mysql:
     image: mysql:latest
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=XoxUer
-      - MYSQL_PASSWORD=#1234PWD
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: XoxUser
+      MYSQL_PASSWORD: "#1234PWD"
+      MYSQL_DATABASE: fundamental_db  # Optional: Create a specific database
     ports:
-      - "3307:3306"
+      - "3306:3306"  # Map host port 3307 to container port 3306
     command:
       --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
     volumes:
