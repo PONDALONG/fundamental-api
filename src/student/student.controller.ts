@@ -27,7 +27,7 @@ export class StudentController {
   ) {
   }
 
-  // @UseGuards(AdminGuard)
+  @UseGuards(AdminGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findAll(
@@ -63,4 +63,16 @@ export class StudentController {
       throw e;
     }
   }
+
+  @UseGuards(AdminGuard)
+  @Get("dropdown-filter")
+  @HttpCode(HttpStatus.OK)
+  async dropdownFilter() {
+    try {
+      return await this.service.dropdownFilter();
+    } catch (e) {
+      throw e;
+    }
+  }
+
 }

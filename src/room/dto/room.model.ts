@@ -30,4 +30,6 @@ export class Dropdown {
   years: number[] = [];
 
   terms: number[] = [];
+
+  groups: string[] = [];
 }

@@ -10,6 +10,7 @@ import { Assignment } from "../assignment/entities/assignment.entity";
 import { StudentAssignment } from "../student-assignment/entities/student-assignment.entity";
 import { StudentStatus } from "./dto/student.enum";
 import { UserAndCsv } from "../user/dto/user.model";
+import { Dropdown } from "../room/dto/room.model";
 
 @Injectable()
 export class StudentService {
@@ -21,6 +22,8 @@ export class StudentService {
     private readonly assignmentRepository: Repository<Assignment>,
     @InjectRepository(StudentAssignment)
     private readonly studentAssignmentRepository: Repository<StudentAssignment>,
+    @InjectRepository(Room)
+    private readonly roomRepository: Repository<Room>,
     private readonly roomService: RoomService,
     private readonly userService: UserService
   ) {
@@ -151,6 +154,24 @@ export class StudentService {
       } catch (e) {
         throw e;
       }
+    }
+  }
+
+  async dropdownFilter() {
+
+    try {
+
+      const roomsYears = await this.roomRepository.createQueryBuilder("room").select(["room.roomYear"]).groupBy("room.roomYear").getMany();
+      const roomGroup = await this.roomRepository.createQueryBuilder("room").select(["room.roomGroup"]).groupBy("room.roomGroup").getMany();
+
+      const dropdown = new Dropdown();
+
+      for (const i of roomsYears) dropdown.years.push(i.roomYear);
+      for (const i of roomGroup) dropdown.groups.push(i.roomGroup);
+
+      return dropdown;
+    } catch (e) {
+      throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
     }
   }
 }
