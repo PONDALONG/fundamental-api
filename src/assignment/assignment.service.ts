@@ -13,6 +13,8 @@ import * as path from "path";
 import { StudentService } from "../student/student.service";
 import { StudentAssignmentService } from "../student-assignment/student-assignment.service";
 import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
+import { User } from "../user/entities/user.entity";
+import { Student } from "../student/entities/student.entity";
 
 @Injectable()
 export class AssignmentService {
@@ -21,6 +23,7 @@ export class AssignmentService {
     @InjectRepository(Assignment) private readonly repository: Repository<Assignment>,
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
+    @InjectRepository(Student) private readonly studentRepository: Repository<Student>,
     private dataSource: DataSource,
     private readonly studentRoomService: StudentService,
     private readonly assignmentService: StudentAssignmentService
@@ -230,7 +233,14 @@ export class AssignmentService {
         .where("rm.roomYear = :roomYear AND rm.roomGroup = :roomGroup AND rm.roomTerm = :roomTerm",
           { roomYear, roomGroup, roomTerm }
         )
-        .select(["assignment", "file", "rm.roomId", "rm.roomGroup", "rm.roomYear", "rm.roomTerm"])
+        .select(["assignment.assignmentId",
+          "assignment.assignmentName",
+          "assignment.assignmentScore",
+          "assignment.assignmentStatus",
+          "assignment.assignmentType",
+          "assignment.assignmentStartDate",
+          "assignment.assignmentEndDate",
+          "file", "rm.roomId", "rm.roomGroup", "rm.roomYear", "rm.roomTerm"])
         .getMany();
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -257,5 +267,29 @@ export class AssignmentService {
     }
   }
 
+  async findMyAssignments(user: User) {
+    try {
+      return await this.repository.createQueryBuilder("assignment")
+        .innerJoin("assignment.room", "rm")
+        .innerJoin("rm.students", "student")
+        .innerJoin("student.user", "user")
+        .innerJoin("assignment.studentAssignments", "stdAsm")
+        .where("user.userId = :userId", user)
+        .select([
+          "assignment.assignmentId",
+          "assignment.assignmentName",
+          "assignment.assignmentScore",
+          "assignment.assignmentStatus",
+          "assignment.assignmentType",
+          "assignment.assignmentStartDate",
+          "assignment.assignmentEndDate"
+        ])
+        .getMany();
+    } catch (e) {
+      throw e;
+    }
+  }
+
   /*------------------- SUB FUNCTION -------------------*/
+
 }

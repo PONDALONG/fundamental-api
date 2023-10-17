@@ -10,7 +10,15 @@ import { UserRole, UserStatus } from "./dto/user.enum";
 import { createWriteStream } from "fs";
 import { Constant } from "../utils/constant";
 import * as path from "path";
-import { adminCreate, ChangePassword, LoginRequest, Template, UserAndCsv, UserToCsv } from "./dto/user.model";
+import {
+  adminCreate,
+  ChangePassword,
+  LoginRequest,
+  Template,
+  UpdateStatus,
+  UserAndCsv,
+  UserToCsv
+} from "./dto/user.model";
 import * as xlsx from "xlsx";
 
 @Injectable()
@@ -200,6 +208,20 @@ export class UserService {
 
   async compare(pwd: string, hash: string) {
     return await bcrypt.compare(pwd, hash);
+  }
+
+  async updateStatus(input: UpdateStatus) {
+
+    try {
+      const user = await this.repository.findOne({ where: { userId: input.userId } });
+      if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
+      user.userStatus = input.userStatus;
+      await this.repository.save(user);
+      return user;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+
   }
 
   private async createAdmin() {

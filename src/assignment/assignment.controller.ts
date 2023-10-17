@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  Request,
   UploadedFiles,
   UseGuards,
   UseInterceptors
@@ -76,6 +77,17 @@ export class AssignmentController {
     try {
       if (isNaN(+assignmentId)) throw new BadRequestException("assignmentId ไม่ถูกต้อง");
       return await this.service.find(assignmentId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("find-my-assignments")
+  @HttpCode(HttpStatus.OK)
+  async findMyAssignments(@Request() auth: any) {
+    try {
+      return await this.service.findMyAssignments(auth.user);
     } catch (e) {
       throw e;
     }

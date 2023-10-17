@@ -32,7 +32,7 @@ export class GroupAssignment {
   stdAsmGroup: string;
 }
 
-export class sendAssignment {
+export class SendAssignment {
   @IsNumberStr()
   stdAsmId: number;
 

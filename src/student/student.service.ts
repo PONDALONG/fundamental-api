@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Student } from "./entities/student.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user/entities/user.entity";
@@ -53,6 +53,7 @@ export class StudentService {
               await this.repository.save(haveStd);
               res.userToCsv[i].result = "สำเร็จ";
               res.userToCsv[i].status = true;
+              students.push(haveStd);
               continue; // skip to next loop
             }
 
@@ -118,7 +119,7 @@ export class StudentService {
         .where("rm.roomYear = :roomYear AND rm.roomGroup = :roomGroup AND rm.roomTerm = :roomTerm",
           { roomYear, roomGroup, roomTerm }
         )
-        .select(["student", "user"])
+        .select(["student.studentId", "user.userId", "user.nameTH", "user.nameEN", "user.studentNo"])
         .getMany();
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -172,6 +173,25 @@ export class StudentService {
       return dropdown;
     } catch (e) {
       throw new BadRequestException("ไม่สามารถดึงข้อมูลได้ : " + e.message);
+    }
+  }
+
+  async findByUserId(userId: number) {
+    try {
+      const student = await this.repository.findOne({
+        relations: ["user", "room"],
+        where: {
+          user: {
+            userId: userId
+          }
+        },
+        select: ["user", "room"]
+      });
+
+      if (!student) throw new NotFoundException("ไม่พบข้อมูลนักศึกษา");
+      return student;
+    } catch (e) {
+      throw e;
     }
   }
 }

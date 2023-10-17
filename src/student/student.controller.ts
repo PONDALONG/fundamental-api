@@ -75,4 +75,15 @@ export class StudentController {
     }
   }
 
+  @UseGuards(AdminGuard)
+  @Get("find")
+  @HttpCode(HttpStatus.OK)
+  async find(@Query("userId") userId: number) {
+    try {
+      return await this.service.findByUserId(userId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
 }

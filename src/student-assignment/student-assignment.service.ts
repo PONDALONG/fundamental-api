@@ -5,12 +5,12 @@ import { DataSource, In, Repository } from "typeorm";
 import { Assignment } from "../assignment/entities/assignment.entity";
 import { Student } from "../student/entities/student.entity";
 import { AssignmentType } from "../assignment/dto/assignment.enum";
-import { CheckStdAsm, FormIntoGroups, GroupAssignment, sendAssignment } from "./dto/student-assignment.model";
+import { CheckStdAsm, FormIntoGroups, GroupAssignment, SendAssignment } from "./dto/student-assignment.model";
 import { stdAsmStatus } from "./dto/student-assignment.enum";
 import { AppUtils } from "../utils/app.utils";
 import { Constant } from "../utils/constant";
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 import { FileResult } from "../file-resource/dto/file-resource.model";
 import { FileResource } from "../file-resource/entities/file-resource.entity";
 import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
@@ -181,7 +181,7 @@ export class StudentAssignmentService {
     }
   }
 
-  async sendAssignment(input: sendAssignment, files: Array<Express.Multer.File>, user: User) {
+  async sendAssignment(input: SendAssignment, files: Array<Express.Multer.File>, user: User) {
     const fileResponses: FileResult[] = [];
     let saveFile = true;
     let msgFileError = "";
@@ -222,6 +222,7 @@ export class StudentAssignmentService {
 
     stdAsm.stdAsmStatus = stdAsmStatus.SUBMITTED;
     stdAsm.stdAsmResult = input.stdAsmResult;
+    stdAsm.stdAsmDateTime = new Date();
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -343,4 +344,56 @@ export class StudentAssignmentService {
   /*------------------- SUB FUNCTION -------------------*/
 
 
+  async findOne(user: User, assignmentId: number) {
+    try {
+
+      const stdAsm = await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .leftJoin("stdAsm.fileResources", "fileResource")
+        .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
+        .andWhere("user.userId = :userId", user)
+        .select(["stdAsm", "fileResource"])
+        .getOne();
+
+      if (!stdAsm) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+      return stdAsm;
+    } catch (e) {
+      throw e;
+    }
+
+  }
+
+  async cancelSendAssignment(user: User, stdAsmId: number) {
+
+    try {
+
+      const stdAsm = await this.repository.findOne({
+        relations: ["fileResources"],
+        where: {
+          stdAsmId: stdAsmId,
+          student: {
+            user: {
+              userId: user.userId
+            }
+          }
+        }
+      });
+      if (!stdAsm) throw new BadRequestException("ไม่พบข้อมูล แบบฝึกหัด");
+
+      stdAsm.stdAsmStatus = stdAsmStatus.WAITING;
+      stdAsm.stdAsmResult = null;
+      stdAsm.stdAsmDateTime = null;
+
+      await this.repository.save(stdAsm);
+
+      if (!!stdAsm.fileResources && stdAsm.fileResources.length > 0) {
+        await this.fileResourceRepository.remove(stdAsm.fileResources);
+      }
+    } catch (e) {
+      throw e;
+    }
+
+  }
 }

@@ -20,7 +20,7 @@ import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { User } from "./entities/user.entity";
 import { ResP } from "../utils/ResP";
-import { ChangePassword, LoginRequest, resetPassword } from "./dto/user.model";
+import { ChangePassword, LoginRequest, resetPassword, UpdateStatus } from "./dto/user.model";
 import { AdminGuard } from "../auth/admin.guard";
 
 @Controller("user")
@@ -87,6 +87,17 @@ export class UserController {
   ) file?: Express.Multer.File) {
     try {
       return await this.service.updateProfile(file, auth.user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Post("update-status")
+  @HttpCode(HttpStatus.OK)
+  async updateStatus(@Body() input: UpdateStatus) {
+    try {
+      return await this.service.updateStatus(input);
     } catch (e) {
       throw e;
     }

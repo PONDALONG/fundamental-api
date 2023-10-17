@@ -1,6 +1,7 @@
-import { IsBlankNull } from "../../utils/custom-validator";
+import { IsBlankNull, IsNumberStr } from "../../utils/custom-validator";
 import { User } from "../entities/user.entity";
 import { UserRole, UserStatus } from "./user.enum";
+import { IsEnum } from "class-validator";
 
 export class LoginRequest {
   @IsBlankNull()
@@ -60,5 +61,14 @@ export class Template {
   STUDENT_NO: string;
   FULLNAME: string;
   FULLNAME_EN: string;
+
+}
+
+export class UpdateStatus {
+  @IsNumberStr()
+  userId: number;
+
+  @IsEnum(UserStatus)
+  userStatus: UserStatus;
 
 }

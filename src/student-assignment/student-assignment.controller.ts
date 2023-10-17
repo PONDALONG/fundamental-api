@@ -2,12 +2,14 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Post,
   Query,
   Request,
+  UploadedFiles,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
@@ -15,7 +17,8 @@ import { AdminGuard } from "../auth/admin.guard";
 import { AuthGuard } from "../auth/auth.guard";
 import { StudentAssignmentService } from "./student-assignment.service";
 import { ResP } from "../utils/ResP";
-import { CheckStdAsm, FormIntoGroups } from "./dto/student-assignment.model";
+import { CheckStdAsm, FormIntoGroups, SendAssignment } from "./dto/student-assignment.model";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 
 @Controller("student-assignment")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -31,11 +34,30 @@ export class StudentAssignmentController {
   @UseGuards(AuthGuard)
   @Post("send-assigment")
   @HttpCode(HttpStatus.OK)
-  async sendAssignment() {
-    //todo send assignment
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: "files" }
+  ]))
+  async sendAssignment(@Body() input: SendAssignment, @UploadedFiles() files: Array<Express.Multer.File>, @Request() auth: any) {
+    await this.service.sendAssignment(input, files, auth.user);
+    return this.response.ok();
   }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
+  @Delete("cancel-send-assigment")
+  @HttpCode(HttpStatus.OK)
+  async cancelSendAssignment(@Query("stdAsmId") stdAsmId: number, @Request() auth: any) {
+    await this.service.cancelSendAssignment(auth.user, stdAsmId);
+    return this.response.ok();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("my-assignment")
+  @HttpCode(HttpStatus.OK)
+  async myAssignment(@Request() auth: any, @Query("assignmentId") assignmentId: number) {
+    return await this.service.findOne(auth.user, assignmentId);
+  }
+
+  @UseGuards(AuthGuard)
   @Get("find-all")
   @HttpCode(HttpStatus.OK)
   async findByAssignment(@Query("assignmentId") assignmentId: number) {
@@ -62,6 +84,7 @@ export class StudentAssignmentController {
   @HttpCode(HttpStatus.OK)
   async updateMyAssignments(@Request() auth: any) {
     await this.service.updateMyAssignments(auth.user);
+    return this.response.ok();
   }
 
   @UseGuards(AdminGuard)
