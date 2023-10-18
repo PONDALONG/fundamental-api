@@ -4,7 +4,7 @@ import { StudentAssignment } from "./entities/student-assignment.entity";
 import { DataSource, In, Repository } from "typeorm";
 import { Assignment } from "../assignment/entities/assignment.entity";
 import { Student } from "../student/entities/student.entity";
-import { AssignmentType } from "../assignment/dto/assignment.enum";
+import { AssignmentStatus, AssignmentType } from "../assignment/dto/assignment.enum";
 import { CheckStdAsm, FormIntoGroups, GroupAssignment, SendAssignment } from "./dto/student-assignment.model";
 import { stdAsmStatus } from "./dto/student-assignment.enum";
 import { AppUtils } from "../utils/app.utils";
@@ -163,21 +163,32 @@ export class StudentAssignmentService {
     await queryRunner.startTransaction();
 
     if (stdAsm.assignment.assignmentScore < input.stdAsmScore) throw new BadRequestException("คะแนนที่ให้มากกว่าคะแนนเต็ม");
+    try {
 
-    if (stdAsm.assignment.assignmentType === AssignmentType.INDIVIDUAL) {
+      if (stdAsm.assignment.assignmentType === AssignmentType.INDIVIDUAL) {
 
-      stdAsm.stdAsmScore = input.stdAsmScore;
-      await queryRunner.manager.save(stdAsm);
+        stdAsm.stdAsmScore = input.stdAsmScore;
+        stdAsm.stdAsmStatus = stdAsmStatus.CHECKED;
+        await queryRunner.manager.save(stdAsm);
 
-    } else {
-
-      try {
-        const query = "UPDATE student_assignment SET std_asm_score = ? WHERE std_asm_group = ? and assignment_id = ?";
-
-        await this.repository.query(query, [input.stdAsmScore, stdAsm.stdAsmGroup, stdAsm.assignment.assignmentId]);
-      } catch (error) {
-        throw new BadRequestException(`บันทึกข้อมูลผิดพลาด: ${error.message}`);
+      } else {
+        if (stdAsm.stdAsmGroup != null) {
+          stdAsm.stdAsmScore = input.stdAsmScore;
+          stdAsm.stdAsmStatus = stdAsmStatus.CHECKED;
+          await queryRunner.manager.save(stdAsm);
+        } else {
+          stdAsm.stdAsmStatus = stdAsmStatus.CHECKED;
+          await queryRunner.manager.save(stdAsm);
+          const query = "UPDATE student_assignment SET std_asm_score = ? WHERE std_asm_group = ? and assignment_id = ?";
+          await queryRunner.query(query, [input.stdAsmScore, stdAsm.stdAsmGroup, stdAsm.assignment.assignmentId]);
+        }
       }
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(`บันทึกข้อมูลผิดพลาด: ${error.message}`);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -186,16 +197,18 @@ export class StudentAssignmentService {
     let saveFile = true;
     let msgFileError = "";
     let listFile: Express.Multer.File[] = null;
-    const stdAsm = await this.repository.findOne({
-      where: {
-        stdAsmId: input.stdAsmId,
-        student: {
-          user: user
-        }
-      }
-    });
+
+    const stdAsm = await this.repository.createQueryBuilder("stdAsm")
+      .innerJoin("stdAsm.assignment", "assignment")
+      .innerJoin("stdAsm.student", "student")
+      .where("stdAsm.stdAsmId = :stdAsmId", input)
+      .andWhere("student.user.userId = :userId", user)
+      .select(["stdAsm", "assignment"])
+      .getOne();
 
     if (!stdAsm) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+
+    if (stdAsm.assignment.assignmentStatus === AssignmentStatus.CLOSE) throw new BadRequestException("ไม่สามารถส่งงานได้ เนื่องจากแบบฝึกหัดถูกปิดการส่งงานแล้ว");
 
     if (!!files["files"]) {
 
@@ -394,6 +407,51 @@ export class StudentAssignmentService {
     } catch (e) {
       throw e;
     }
+  }
 
+  async find(stdAsmId: number) {
+    try {
+
+      const stdAsm = await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .leftJoin("stdAsm.fileResources", "fileResource")
+        .where("stdAsm.stdAsmId = :stdAsmId", { stdAsmId: stdAsmId })
+        .select(["stdAsm", "fileResource", "student.studentId", "user",
+          "assignment.assignmentId",
+          "assignment.assignmentName",
+          "assignment.assignmentScore",
+          "assignment.assignmentStatus",
+          "assignment.assignmentType",
+          "assignment.assignmentStartDate",
+          "assignment.assignmentEndDate"
+        ])
+        .getOne();
+
+      if (!stdAsm) throw new NotFoundException("ไม่พบข้อมูล แบบฝึกหัด");
+
+      if (stdAsm.assignment.assignmentType === AssignmentType.INDIVIDUAL) return stdAsm;
+
+      const stdAsmGroup = await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .innerJoin("stdAsm.assignment", "assignment")
+        .where("stdAsm.stdAsmGroup = :stdAsmGroup", { stdAsmGroup: stdAsm.stdAsmGroup })
+        .andWhere("assignment.assignmentId = :assignmentId", { assignmentId: stdAsm.assignment.assignmentId })
+        .andWhere("user.userId != :userId", { userId: stdAsm.student.user.userId })
+        .select(["stdAsm.stdAsmId", "student.studentId", "user.nameTH", "user.nameEN", "user.studentNo"])
+        .getMany();
+
+      const studentInGroup: User[] = [];
+      for (const stdAsmGroupElement of stdAsmGroup) {
+        studentInGroup.push(stdAsmGroupElement.student.user);
+      }
+
+      stdAsm["studentInGroup"] = studentInGroup;
+      return stdAsm;
+    } catch (e) {
+      throw e;
+    }
   }
 }

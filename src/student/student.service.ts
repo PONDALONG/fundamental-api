@@ -120,6 +120,7 @@ export class StudentService {
           { roomYear, roomGroup, roomTerm }
         )
         .select(["student.studentId", "user.userId", "user.nameTH", "user.nameEN", "user.studentNo"])
+        .orderBy("user.studentNo", "ASC")
         .getMany();
     } catch (e) {
       throw new BadRequestException(e.message);

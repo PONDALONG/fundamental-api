@@ -18,7 +18,6 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
-import { User } from "./entities/user.entity";
 import { ResP } from "../utils/ResP";
 import { ChangePassword, LoginRequest, resetPassword, UpdateStatus } from "./dto/user.model";
 import { AdminGuard } from "../auth/admin.guard";
@@ -44,10 +43,10 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
-  @Get("profile")
+  @Get("me")
   @HttpCode(HttpStatus.OK)
-  async profile(@Request() auth: any) {
-    return auth.user as User;
+  async me(@Request() auth: any) {
+    return this.service.me(auth.user);
   }
 
   @UseGuards(AuthGuard)

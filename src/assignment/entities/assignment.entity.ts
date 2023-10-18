@@ -28,7 +28,7 @@ export class Assignment {
   @Column({ name: "assignment_start_date", nullable: false, type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   assignmentStartDate: Date;
 
-  @Column({ name: "assignment_end_date", nullable: true })
+  @Column({ name: "assignment_end_date", nullable: false, type: "timestamp" })
   assignmentEndDate: Date;
 
   //assignment 1-n student-assignment

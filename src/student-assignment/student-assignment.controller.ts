@@ -65,10 +65,11 @@ export class StudentAssignmentController {
   }
 
   @UseGuards(AdminGuard)
-  @Post("check-assigment")
+  @Post("check-assignment")
   @HttpCode(HttpStatus.OK)
   async checkAssignment(@Body() input: CheckStdAsm) {
     await this.service.checkAssignment(input);
+    return this.response.ok();
   }
 
   @UseGuards(AdminGuard)
@@ -92,6 +93,13 @@ export class StudentAssignmentController {
   @HttpCode(HttpStatus.OK)
   async findStudent(@Query("assignmentId") assignmentId: number) {
     return await this.service.findStudent(assignmentId);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get("find")
+  @HttpCode(HttpStatus.OK)
+  async find(@Query("stdAsmId") stdAsmId: number) {
+    return await this.service.find(stdAsmId);
   }
 
 }

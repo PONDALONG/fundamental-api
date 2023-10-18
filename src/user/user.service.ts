@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import * as csv from "csv-parser";
@@ -20,6 +27,7 @@ import {
   UserToCsv
 } from "./dto/user.model";
 import * as xlsx from "xlsx";
+import { Student } from "../student/entities/student.entity";
 
 @Injectable()
 export class UserService {
@@ -28,6 +36,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
     private readonly authService: AuthService
   ) {
     this.createAdmin().then();
@@ -112,14 +122,21 @@ export class UserService {
 
   async login(req: LoginRequest) {
     try {
-      const user = await this.repository.findOne({ where: { studentNo: req.studentCode } });
+      const user = await this.repository.findOne(
+        {
+          where:
+            {
+              studentNo: req.studentCode, userStatus: UserStatus.ACTIVE
+            }
+        }
+      );
 
-      if (user) {
+      if (!!user) {
         if (await this.compare(req.password, user.password)) {
           const token = await this.authService.tokenize(user);
           return { "access_token": token, profile: user };
         } else {
-          throw new BadRequestException("password incorrect");
+          throw new BadRequestException("รหัสผ่านไม่ถูกต้อง");
         }
       } else {
         throw new BadRequestException("ไม่พบผู้ใช้งาน");
@@ -163,6 +180,18 @@ export class UserService {
     }
   }
 
+  async me(user: User) {
+    const profile = await this.studentRepository.createQueryBuilder("student")
+      .innerJoin("student.user", "user")
+      .innerJoin("student.room", "room")
+      .select(["user", "student.studentId", "room.roomGroup", "room.roomYear", "room.roomTerm"])
+      .where("user.userId = :userId", user)
+      .getOne();
+
+    if (!profile) throw new NotFoundException("ไม่พบผู้ใช้งาน");
+
+    return profile;
+  }
 
   /*------------------- SUB FUNCTION -------------------*/
 
@@ -188,6 +217,7 @@ export class UserService {
         ]).where(
           "user.userId = :userId AND user.studentNo = :studentNo", user
         )
+        .andWhere("user.userStatus = :userStatus", { userStatus: UserStatus.ACTIVE })
         .getOne();
       if (!user) {
         throw new UnauthorizedException();
