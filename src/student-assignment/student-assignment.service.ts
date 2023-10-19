@@ -172,7 +172,7 @@ export class StudentAssignmentService {
         await queryRunner.manager.save(stdAsm);
 
       } else {
-        if (stdAsm.stdAsmGroup != null) {
+        if (stdAsm.stdAsmGroup == null) {
           stdAsm.stdAsmScore = input.stdAsmScore;
           stdAsm.stdAsmStatus = stdAsmStatus.CHECKED;
           await queryRunner.manager.save(stdAsm);

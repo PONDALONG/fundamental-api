@@ -26,7 +26,6 @@ export class FileResourceController {
   uploadFile(@UploadedFiles() files?: Array<Express.Multer.File>) {
     const listFile: Express.Multer.File[] = files["files"];
     for (const listFileElement of listFile) {
-      console.log(listFileElement.originalname);
       const destinationPath = `./uploads/${listFileElement.originalname}`;
 
       createWriteStream(destinationPath).write(listFileElement.buffer);
@@ -45,7 +44,6 @@ export class FileResourceController {
   @Post("upload-xlsx")
   @UseInterceptors(FileInterceptor("file"))
   async uploadFileX(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
     try {
       if (file.buffer) {
         // Read the XLSX file from the buffer
@@ -60,7 +58,6 @@ export class FileResourceController {
 
 
         // Now 'jsonData' contains the data from the XLSX file as JSON
-        console.log("XLSX data:", jsonData);
         return jsonData;
       } else {
         console.error("Uploaded file buffer is empty.");

@@ -94,10 +94,9 @@ export class RoomService {
 
   async findAll() {
     try {
-      const result = await this.repository.find();
-      return result;
+      return await this.repository.find();
     } catch (e) {
-      throw e;
+      throw new BadRequestException("เกิดข้อผิดพลาด");
     }
   }
 
@@ -204,8 +203,7 @@ export class RoomService {
         "asm2.assignmentId", "asm2.assignmentName"
       ])
       .orderBy("user.studentNo", "ASC")
-      .orderBy("asm.assignmentId", "ASC")
-      .orderBy("stdAsm.assignment.assignmentId", "ASC")
+      .addOrderBy("asm.assignmentId", "ASC")
       .getOne();
 
     if (!room) throw new BadRequestException("ไม่พบข้อมูลห้องเรียน");
@@ -218,8 +216,8 @@ export class RoomService {
 
     const HEADER = [
       { id: "id", title: "STUDENT_NO" },
-      { id: "name", title: "FULLNAME" },
-      { id: "email", title: "FULLNAME_EN" }
+      { id: "nameTH", title: "FULLNAME_TH" },
+      { id: "nameEN", title: "FULLNAME_EN" }
     ];
 
     for (const assignment of room.assignments) {
@@ -230,8 +228,8 @@ export class RoomService {
     const data = room.students.map((student) => {
       const item = {
         id: student.user.studentNo,
-        name: student.user.nameTH,
-        email: student.user.nameEN
+        nameTH: student.user.nameTH,
+        nameEN: student.user.nameEN
       };
 
       let total = 0;
@@ -252,8 +250,8 @@ export class RoomService {
 
     const HEADER = [
       { id: "id", title: "STUDENT_NO" },
-      { id: "name", title: "FULLNAME" },
-      { id: "email", title: "FULLNAME_EN" }
+      { id: "nameTH", title: "FULLNAME" },
+      { id: "nameEN", title: "FULLNAME_EN" }
     ];
 
     for (const assignment of room.assignments) {
@@ -267,8 +265,8 @@ export class RoomService {
     const data = room.students.map((student) => {
       const item = {
         id: student.user.studentNo,
-        name: student.user.nameTH,
-        email: student.user.nameEN
+        nameTH: student.user.nameTH,
+        nameEN: student.user.nameEN
       };
 
       let total = 0;
@@ -299,8 +297,8 @@ export class RoomService {
     // Define headers
     const HEADER = [
       { id: "id", title: "STUDENT_NO", width: 15 },
-      { id: "name", title: "FULLNAME", width: 30 },
-      { id: "email", title: "FULLNAME_EN", width: 35 }
+      { id: "nameTH", title: "FULLNAME", width: 30 },
+      { id: "nameEN", title: "FULLNAME_EN", width: 35 }
     ];
 
     for (const assignment of room.assignments) {
@@ -319,8 +317,8 @@ export class RoomService {
     room.students.forEach(student => {
       const item = {
         id: student.user.studentNo,
-        name: student.user.nameTH,
-        email: student.user.nameEN
+        nameTH: student.user.nameTH,
+        nameEN: student.user.nameEN
       };
 
       let total = 0;
@@ -345,15 +343,18 @@ export class RoomService {
   /*------------------- SUB FUNCTION -------------------*/
 
   async findYGT(roomYear: number, roomGroup: string, roomTerm: number) {
-
     try {
-      return await this.repository.createQueryBuilder("room")
+      const room = await this.repository.createQueryBuilder("room")
         .where(
           "room.roomYear = :roomYear AND room.roomGroup = :roomGroup AND room.roomTerm = :roomTerm",
           { roomYear, roomGroup, roomTerm }
         )
         .select("room.roomId")
         .getOne();
+
+      if (!room) throw new BadRequestException("ไม่พบห้องเรียน");
+
+      return room;
     } catch (e) {
       throw e;
     }

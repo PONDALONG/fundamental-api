@@ -26,35 +26,32 @@ export class resetPassword {
 
 
 export class UserAndCsv {
-  user: User[];
+  users: User[];
   userToCsv: UserToCsv[];
 }
 
 export class UserToCsv {
-  firstname: string;
-  lastname: string;
-  studentId: string;
+  nameTH: string;
+  nameEN: string;
+  studentNo: string;
   result: string;
   status: boolean;
 
   constructor(user: User, result: string, status: boolean) {
-    this.firstname = user.nameTH;
-    this.lastname = user.nameEN;
-    this.studentId = user.studentNo;
+    this.nameTH = user.nameTH;
+    this.nameEN = user.nameEN;
+    this.studentNo = user.studentNo;
     this.result = result;
     this.status = status;
   }
 }
 
 export class adminCreate {
-  firstname = "admin";
-  lastname = "admin";
-  studentNo = "admin";
-  class = "admin";
+  nameTH = process.env.ADMIN_NAME_TH;
+  nameEN = process.env.ADMIN_NAME_EN;
+  studentNo = process.env.ADMIN_STUDENT_NO;
+  password = process.env.ADMIN_PASSWORD;
   role = UserRole.TEACHER;
-  userStatus = UserStatus.ACTIVE;
-
-
 }
 
 export class Template {

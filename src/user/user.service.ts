@@ -46,7 +46,6 @@ export class UserService {
   /*------------------- MAIN FUNCTION -------------------*/
 
   async imports(file: Express.Multer.File) {
-    console.log(file);
     const users: User[] = [];
     const userCsv: UserToCsv[] = [];
     const userAndCsv = new UserAndCsv();
@@ -79,7 +78,7 @@ export class UserService {
           } else { //create user
             try {
               this.validateUser(u);
-              u.password = this.encode(u.studentNo.trim() + Constant.PASSWORD);
+              u.password = this.encode(u.studentNo.trim() + process.env.CONCAT_PASSWORD);
               try {
                 const save: User = await this.repository.save(u);
                 users.push(save);
@@ -92,7 +91,7 @@ export class UserService {
             }
           }
         }
-        userAndCsv.user = users;
+        userAndCsv.users = users;
         userAndCsv.userToCsv = userCsv;
         return userAndCsv;
 
@@ -154,7 +153,7 @@ export class UserService {
 
       if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
 
-      user.password = this.encode(user.studentNo + Constant.PASSWORD);
+      user.password = this.encode(user.studentNo + process.env.CONCAT_PASSWORD);
       await this.repository.save(user);
 
     } catch (e) {
@@ -258,14 +257,22 @@ export class UserService {
     try {
       const admin = new adminCreate();
       let check = await this.findAdmin(admin.studentNo);
-      if (check) return;
-      const user = new User();
-      user.nameTH = admin.firstname;
-      user.nameEN = admin.lastname;
-      user.studentNo = admin.studentNo;
-      user.role = admin.role;
-      user.password = this.encode(admin.studentNo);
-      await this.repository.save(user);
+      if (check) {
+        check.nameTH = admin.nameTH;
+        check.nameEN = admin.nameEN;
+        check.role = admin.role;
+        check.password = this.encode(admin.password);
+        await this.repository.save(check);
+      } else {
+        const user = new User();
+        user.nameTH = admin.nameTH;
+        user.nameEN = admin.nameEN;
+        user.studentNo = admin.studentNo;
+        user.role = admin.role;
+        user.password = this.encode(admin.password);
+        await this.repository.save(user);
+      }
+
     } catch (e) {
       console.error("createAdmin error : " + e.message);
     }

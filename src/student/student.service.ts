@@ -35,18 +35,21 @@ export class StudentService {
 
     try {
       const students: Student[] = [];
-      let room: Room = null;
-      if (!!roomId) {
-        room = await this.roomService.findByRoomId(roomId);
-        if (!room) throw new BadRequestException(`ไม่พบ roomId : ${roomId}`);
-      }
+      if (!roomId) throw new BadRequestException("กรุณาระบุห้องเรียน");
+
+      let room = await this.roomService.findByRoomId(roomId);
+
+      if (!room) throw new BadRequestException(`ไม่พบ roomId : ${roomId}`);
 
       const res: UserAndCsv = await this.userService.imports(file);
 
       if (!!roomId) {
-        for (const i in res.user) {
+        for (const i in res.users) {
           try {
-            const haveStd: Student = await this.findByUser(res.user[i]);
+            if (!res.userToCsv[i].status)
+              continue; // skip to next loop
+
+            const haveStd: Student = await this.findByUser(res.users[i]);
             if (!!haveStd) {
               haveStd.studentStatus = StudentStatus.ACTIVE;
               haveStd.room = room;
@@ -58,7 +61,7 @@ export class StudentService {
             }
 
             const studentRoom = new Student();
-            studentRoom.user = res.user[i];
+            studentRoom.user = res.users[i];
             studentRoom.room = room;
             const save = await this.repository.save(studentRoom);
 
