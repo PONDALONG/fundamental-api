@@ -298,10 +298,20 @@ export class AssignmentService {
           assignmentId: assignmentId
         }
       });
-      await this.repository.delete(assignment);
+      await this.repository.delete({ assignmentId: assignmentId });
 
       for (const fileResource of assignment.fileResources) {
-        await this.fileResourceService.delete(fileResource.fileResourceId);
+        try {
+          const directoryPath = fileResource.fileResourcePath;
+
+          fs.accessSync(directoryPath, fs.constants.F_OK);
+          fs.unlinkSync(directoryPath);
+
+        } catch (error) {
+          if (error.code === "ENOENT") {
+            console.error("File not found!");
+          }
+        }
       }
     } catch (e) {
       throw new BadRequestException("ไม่สามารถลบข้อมูลได้ : " + e.message);

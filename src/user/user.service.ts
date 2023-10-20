@@ -110,22 +110,34 @@ export class UserService {
 
   async login(req: LoginRequest) {
     try {
-      const user = await this.repository.findOne({
-        where: {
-          studentNo: req.studentCode, userStatus: UserStatus.ACTIVE
-        }
-      });
 
-      if (!!user) {
-        if (await this.compare(req.password, user.password)) {
-          const token = await this.authService.tokenize(user);
-          return { "access_token": token, profile: user };
-        } else {
-          throw new BadRequestException("รหัสผ่านไม่ถูกต้อง");
+      const user = await this.repository.createQueryBuilder("user")
+        .select("user")
+        .where("user.studentNo = :studentNo AND user.userStatus = :userStatus", {
+          studentNo: req.studentCode,
+          userStatus: UserStatus.ACTIVE
+        })
+        .getOne();
+
+      if (!user) throw new BadRequestException("ไม่พบผู้ใช้งาน");
+
+      if (user.role === UserRole.STUDENT) {
+        const student = await this.studentRepository.findOne({
+          where: { user: { userId: user.userId } }
+        });
+        if (!student) {
+          await this.repository.delete({ userId: user.userId });
+          throw new BadRequestException("ไม่พบผู้ใช้งาน");
         }
-      } else {
-        throw new BadRequestException("ไม่พบผู้ใช้งาน");
       }
+
+      if (await this.compare(req.password, user.password)) {
+        const token = await this.authService.tokenize(user);
+        return { "access_token": token, profile: user };
+      } else {
+        throw new BadRequestException("รหัสผ่านไม่ถูกต้อง");
+      }
+
     } catch (e) {
       throw new HttpException(e.message, e.status);
     }
@@ -201,10 +213,18 @@ export class UserService {
   async checkUser(user: User) {
     try {
 
-      user = await this.repository.createQueryBuilder("user")
-        .select(["user.userId", "user.nameTH", "user.nameEN", "user.studentNo", "user.role", "user.createDate"]).where("user.userId = :userId AND user.studentNo = :studentNo", user)
-        .andWhere("user.userStatus = :userStatus", { userStatus: UserStatus.ACTIVE })
-        .getOne();
+      if (user.role == UserRole.TEACHER) {
+        user = await this.repository.createQueryBuilder("user")
+          .select(["user.userId", "user.nameTH", "user.nameEN", "user.studentNo", "user.role", "user.createDate"]).where("user.userId = :userId AND user.studentNo = :studentNo", user)
+          .andWhere("user.userStatus = :userStatus", { userStatus: UserStatus.ACTIVE })
+          .getOne();
+      } else {
+        user = await this.repository.createQueryBuilder("user")
+          .innerJoin("user.student", "student")
+          .select(["user.userId", "user.nameTH", "user.nameEN", "user.studentNo", "user.role", "user.createDate"]).where("user.userId = :userId AND user.studentNo = :studentNo", user)
+          .andWhere("user.userStatus = :userStatus", { userStatus: UserStatus.ACTIVE })
+          .getOne();
+      }
       if (!user) {
         throw new UnauthorizedException();
       }

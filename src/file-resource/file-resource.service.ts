@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { FileResource } from "./entities/file-resource.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -33,8 +33,9 @@ export class FileResourceService {
       fs.unlinkSync(directoryPath);
 
     } catch (error) {
-      if (error.code === "ENOENT") return;
-      throw new BadRequestException("ลบไฟล์ผิดพลาด : " + error.message);
+      if (error.code === "ENOENT") {
+        console.error("File not found!");
+      }
     }
   }
 

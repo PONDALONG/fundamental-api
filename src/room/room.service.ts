@@ -359,4 +359,20 @@ export class RoomService {
       throw e;
     }
   }
+
+  async delete(roomId: number) {
+    try {
+      const room = await this.repository.findOne({
+        where: {
+          roomId: roomId
+        }
+      });
+      if (!room) throw new BadRequestException("ไม่พบห้องเรียน");
+      await this.repository.delete({
+        roomId: roomId
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
 }

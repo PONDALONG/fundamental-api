@@ -45,7 +45,7 @@ export class AssignmentController {
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileFieldsInterceptor([
     { name: "files" }
-  ]))
+  ], {}))
   async update(@UploadedFiles() files: Array<Express.Multer.File>, @Body() input: UpdateAssignment) {
     await this.service.update(files, input);
     return this.response.ok();

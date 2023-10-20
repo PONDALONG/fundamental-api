@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -162,7 +163,7 @@ export class RoomController {
     }
   }
 
-  // @UseGuards(AdminGuard)
+  @UseGuards(AdminGuard)
   @Get("export-score-student")
   @HttpCode(HttpStatus.OK)
   async exportScoreStudent(@Res() res: Response, @Query("roomId") roomId: number, @Query("type") type: string) {
@@ -179,6 +180,19 @@ export class RoomController {
       res.setHeader("Content-Type", contentType);
 
       res.send(result.file);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete("delete")
+  @HttpCode(HttpStatus.OK)
+  async delete(@Query("roomId") roomId: number) {
+    try {
+      if (isNaN(+roomId)) throw new BadRequestException("roomId ไม่ถูกต้อง");
+      await this.service.delete(roomId);
+      return this.response.ok();
     } catch (e) {
       throw e;
     }
