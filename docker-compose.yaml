@@ -16,3 +16,5 @@ services:
       - dbdata:/var/lib/mysql
 volumes:
   dbdata:
+
+# docker-compose up -d
