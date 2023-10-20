@@ -132,11 +132,6 @@ export class StudentService {
     return result;
   }
 
-  async update(input: any) {
-
-  }
-
-
   /*------------------- SUB FUNCTION -------------------*/
 
   async findByUser(user: User) {

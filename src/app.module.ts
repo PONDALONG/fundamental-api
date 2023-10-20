@@ -23,7 +23,7 @@ import { ConfigModule } from "@nestjs/config";
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: ImportEntities,
-      synchronize: true
+      synchronize: false
     }),
     TypeOrmModule.forFeature(ImportEntities),
     JwtModule.register({

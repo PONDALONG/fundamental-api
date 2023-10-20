@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException
@@ -34,10 +33,8 @@ export class UserService {
   private readonly salt = bcrypt.genSaltSync(10);
 
   constructor(
-    @InjectRepository(User)
-    private readonly repository: Repository<User>,
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
+    @InjectRepository(User) private readonly repository: Repository<User>,
+    @InjectRepository(Student) private readonly studentRepository: Repository<Student>,
     private readonly authService: AuthService
   ) {
     this.createAdmin().then();
@@ -57,38 +54,31 @@ export class UserService {
       if ((results as User[]).length > 0) {
 
         for (const u of (results as User[])) {
+          try {
+            this.validateUser(u);
+          } catch (e) {
+            userCsv.push(new UserToCsv(u, e.message, false));
+            continue;
+          }
           const user: User = await this.findOneByStudentId(u.studentNo);
-          if (!!user) { //update user
-            try {
-              this.validateUser(u);
-              try {
+          try {
 
-                user.userStatus = UserStatus.ACTIVE;
-                user.nameTH = u.nameTH;
-                user.nameEN = u.nameEN;
-                const save: User = await this.repository.save(user);
-                users.push(save);
-                userCsv.push(new UserToCsv(save, "สำเร็จ", true));
-              } catch (e) {
-                throw new Error("บันทึกข้อมูลผิดพลาด : " + e.message);
-              }
-            } catch (e) {
-              userCsv.push(new UserToCsv(user, e.message, false));
-            }
-          } else { //create user
-            try {
-              this.validateUser(u);
+            if (!!user) { //update user
+              user.userStatus = UserStatus.ACTIVE;
+              user.nameTH = u.nameTH;
+              user.nameEN = u.nameEN;
+              const save: User = await this.repository.save(user);
+              users.push(save);
+              userCsv.push(new UserToCsv(save, "สำเร็จ", true));
+
+            } else { //create user
               u.password = this.encode(u.studentNo.trim() + process.env.CONCAT_PASSWORD);
-              try {
-                const save: User = await this.repository.save(u);
-                users.push(save);
-                userCsv.push(new UserToCsv(save, "สำเร็จ", true));
-              } catch (e) {
-                throw new Error("บันทึกข้อมูลผิดพลาด : " + e.message);
-              }
-            } catch (e) {
-              userCsv.push(new UserToCsv(u, e.message, false));
+              const save: User = await this.repository.save(u);
+              users.push(save);
+              userCsv.push(new UserToCsv(save, "สำเร็จ", true));
             }
+          } catch (e) {
+            userCsv.push(new UserToCsv(u, "บันทึกข้อมูลผิดพลาด : " + e.message, false));
           }
         }
         userAndCsv.users = users;
@@ -96,12 +86,11 @@ export class UserService {
         return userAndCsv;
 
       } else {
-        throw new BadRequestException("no data");
+        throw new BadRequestException("ไม่พบข้อมูล");
       }
 
     } catch (e) {
-      console.error("imports error : " + e.message);
-      throw new HttpException(e.message, e.status | HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -121,14 +110,11 @@ export class UserService {
 
   async login(req: LoginRequest) {
     try {
-      const user = await this.repository.findOne(
-        {
-          where:
-            {
-              studentNo: req.studentCode, userStatus: UserStatus.ACTIVE
-            }
+      const user = await this.repository.findOne({
+        where: {
+          studentNo: req.studentCode, userStatus: UserStatus.ACTIVE
         }
-      );
+      });
 
       if (!!user) {
         if (await this.compare(req.password, user.password)) {
@@ -206,16 +192,7 @@ export class UserService {
     try {
 
       user = await this.repository.createQueryBuilder("user")
-        .select([
-          "user.userId",
-          "user.nameTH",
-          "user.nameEN",
-          "user.studentNo",
-          "user.role",
-          "user.createDate"
-        ]).where(
-          "user.userId = :userId AND user.studentNo = :studentNo", user
-        )
+        .select(["user.userId", "user.nameTH", "user.nameEN", "user.studentNo", "user.role", "user.createDate"]).where("user.userId = :userId AND user.studentNo = :studentNo", user)
         .andWhere("user.userStatus = :userStatus", { userStatus: UserStatus.ACTIVE })
         .getOne();
       if (!user) {
@@ -261,7 +238,9 @@ export class UserService {
         check.nameTH = admin.nameTH;
         check.nameEN = admin.nameEN;
         check.role = admin.role;
-        check.password = this.encode(admin.password);
+        if (process.env.ADMIN_RESET_PASSWORD == "YES"){
+          check.password = this.encode(admin.password);
+        }
         await this.repository.save(check);
       } else {
         const user = new User();

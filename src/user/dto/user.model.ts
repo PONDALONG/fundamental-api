@@ -38,9 +38,9 @@ export class UserToCsv {
   status: boolean;
 
   constructor(user: User, result: string, status: boolean) {
-    this.nameTH = user.nameTH;
-    this.nameEN = user.nameEN;
-    this.studentNo = user.studentNo;
+    this.nameTH = user.nameTH || null;
+    this.nameEN = user.nameEN || null;
+    this.studentNo = user.studentNo || null;
     this.result = result;
     this.status = status;
   }
