@@ -36,10 +36,10 @@ export class Assignment {
   studentAssignments: StudentAssignment[];
 
   //assignment n-1 room
-  @ManyToOne(() => Room, x => x.assignments)
+  @ManyToOne(() => Room, x => x.assignments, { onDelete: "CASCADE" })
   @JoinColumn({ name: "room_id", referencedColumnName: "roomId" })
   room: Room;
 
-  @OneToMany(() => FileResource, x => x.assignment)
+  @OneToMany(() => FileResource, x => x.assignment, { onDelete: "CASCADE" })
   fileResources: FileResource[];
 }

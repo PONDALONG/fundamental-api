@@ -14,7 +14,7 @@ import { StudentService } from "../student/student.service";
 import { StudentAssignmentService } from "../student-assignment/student-assignment.service";
 import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
 import { User } from "../user/entities/user.entity";
-import { Student } from "../student/entities/student.entity";
+import { FileResourceService } from "../file-resource/file-resource.service";
 
 @Injectable()
 export class AssignmentService {
@@ -23,10 +23,10 @@ export class AssignmentService {
     @InjectRepository(Assignment) private readonly repository: Repository<Assignment>,
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
-    @InjectRepository(Student) private readonly studentRepository: Repository<Student>,
     private dataSource: DataSource,
     private readonly studentRoomService: StudentService,
-    private readonly assignmentService: StudentAssignmentService
+    private readonly assignmentService: StudentAssignmentService,
+    private readonly fileResourceService: FileResourceService
   ) {
   }
 
@@ -287,6 +287,24 @@ export class AssignmentService {
         .getMany();
     } catch (e) {
       throw e;
+    }
+  }
+
+  async delete(assignmentId: number) {
+    try {
+      const assignment = await this.repository.findOne({
+        relations: ["fileResources"],
+        where: {
+          assignmentId: assignmentId
+        }
+      });
+      await this.repository.delete(assignment);
+
+      for (const fileResource of assignment.fileResources) {
+        await this.fileResourceService.delete(fileResource.fileResourceId);
+      }
+    } catch (e) {
+      throw new BadRequestException("ไม่สามารถลบข้อมูลได้ : " + e.message);
     }
   }
 

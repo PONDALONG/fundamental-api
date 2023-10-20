@@ -34,7 +34,7 @@ export class User {
   image: string;
 
   //user 1-1 student
-  @OneToOne(() => Student, x => x.user)
+  @OneToOne(() => Student, x => x.user, { onDelete: "CASCADE" })
   student: Student;
 
 }

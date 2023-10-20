@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -88,6 +89,19 @@ export class AssignmentController {
   async findMyAssignments(@Request() auth: any) {
     try {
       return await this.service.findMyAssignments(auth.user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete("delete")
+  @HttpCode(HttpStatus.OK)
+  async delete(@Query("assignmentId") assignmentId: number) {
+    try {
+      if (isNaN(+assignmentId)) throw new BadRequestException("assignmentId ไม่ถูกต้อง");
+      await this.service.delete(assignmentId);
+      return this.response.ok();
     } catch (e) {
       throw e;
     }

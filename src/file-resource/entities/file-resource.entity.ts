@@ -23,7 +23,7 @@ export class FileResource {
   @JoinColumn({ name: "std_asm_id", referencedColumnName: "stdAsmId" })
   studentAssignment: StudentAssignment;
 
-  @ManyToOne(() => Assignment, x => x.fileResources, { nullable: true })
+  @ManyToOne(() => Assignment, x => x.fileResources, { nullable: true, onDelete: "CASCADE" })
   @JoinColumn({ name: "assignment_id", referencedColumnName: "assignmentId" })
   assignment: Assignment;
 }

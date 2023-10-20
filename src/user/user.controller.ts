@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   HttpCode,
@@ -10,6 +11,7 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
@@ -97,6 +99,18 @@ export class UserController {
   async updateStatus(@Body() input: UpdateStatus) {
     try {
       return await this.service.updateStatus(input);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete("delete")
+  @HttpCode(HttpStatus.OK)
+  async delete(@Query("userId") userId: number) {
+    try {
+      await this.service.delete(userId);
+      return this.response.ok();
     } catch (e) {
       throw e;
     }

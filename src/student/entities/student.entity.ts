@@ -17,7 +17,7 @@ export class Student {
   studentStatus: string;
 
   //student n-1 room
-  @ManyToOne(() => Room, x => x.students)
+  @ManyToOne(() => Room, x => x.students, { onDelete: "CASCADE" })
   @JoinColumn({ name: "room_id", referencedColumnName: "roomId" })
   room: Room;
 
@@ -26,7 +26,7 @@ export class Student {
   studentAssignments: StudentAssignment[];
 
   //student 1-1 user
-  @ManyToOne(() => User, x => x.student, { nullable: false })
+  @ManyToOne(() => User, x => x.student, { nullable: false, onDelete: "CASCADE" })
   @JoinColumn({ name: "user_id", referencedColumnName: "userId" })
   user: User;
 

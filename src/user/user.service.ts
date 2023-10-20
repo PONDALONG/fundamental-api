@@ -178,6 +178,16 @@ export class UserService {
     return profile;
   }
 
+  async delete(userId: number) {
+    try {
+      const exist = await this.repository.exist({ where: { userId: userId, role: UserRole.STUDENT } });
+      if (!exist) throw new BadRequestException("ไม่พบผู้ใช้งาน");
+      await this.repository.delete({ userId: userId });
+    } catch (e) {
+      throw e;
+    }
+  }
+
   /*------------------- SUB FUNCTION -------------------*/
 
   async findOne(id: number) {
@@ -238,7 +248,7 @@ export class UserService {
         check.nameTH = admin.nameTH;
         check.nameEN = admin.nameEN;
         check.role = admin.role;
-        if (process.env.ADMIN_RESET_PASSWORD == "YES"){
+        if (process.env.ADMIN_RESET_PASSWORD == "YES") {
           check.password = this.encode(admin.password);
         }
         await this.repository.save(check);
