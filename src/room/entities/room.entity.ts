@@ -31,11 +31,11 @@ export class Room {
   roomCreateDate: Date;
 
   //room 1-n assignment
-  @OneToMany(() => Assignment, x => x.room)
+  @OneToMany(() => Assignment, x => x.room, { onDelete: "CASCADE" })
   assignments: Assignment[];
 
   //room 1-n student
-  @OneToMany(() => Student, x => x.room)
+  @OneToMany(() => Student, x => x.room, { onDelete: "CASCADE" })
   students: Student[];
 
 }
