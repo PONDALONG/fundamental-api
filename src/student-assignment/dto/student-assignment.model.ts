@@ -21,7 +21,7 @@ export class SendAssignmentRequest {
 export class FormIntoGroups {
 
   @IsBlankNull()
-  stdAsmGroup: string;
+  stdAsmGroup: number;
 
   @IsBlankNull()
   stdAsmId: number;
@@ -29,14 +29,13 @@ export class FormIntoGroups {
 
 export class GroupAssignment {
   studentAssignments: StudentAssignment[] = Array<StudentAssignment>();
-  stdAsmGroup: string;
+  stdAsmGroup: number;
 }
 
 export class SendAssignment {
   @IsNumberStr()
   stdAsmId: number;
 
-  @IsBlankNull()
   stdAsmResult: string;
 
   deleteFileIds: string;

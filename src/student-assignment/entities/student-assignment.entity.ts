@@ -16,7 +16,7 @@ export class StudentAssignment {
   stdAsmStatus: stdAsmStatus;
 
   @Column({ name: "std_asm_group", nullable: true })
-  stdAsmGroup: string;
+  stdAsmGroup: number;
 
   @Column({ name: "std_asm_date_time", nullable: true, type: "timestamp" })
   stdAsmDateTime: Date;
