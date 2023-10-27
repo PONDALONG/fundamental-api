@@ -15,6 +15,7 @@ import { FileResult } from "../file-resource/dto/file-resource.model";
 import { FileResource } from "../file-resource/entities/file-resource.entity";
 import { FileResourceType } from "../file-resource/entities/file-resource-type.enum";
 import { User } from "../user/entities/user.entity";
+import { RoomStatus } from "../room/dto/room.enum";
 
 @Injectable()
 export class StudentAssignmentService {
@@ -364,8 +365,10 @@ export class StudentAssignmentService {
         .innerJoin("stdAsm.assignment", "assignment")
         .innerJoin("stdAsm.student", "student")
         .innerJoin("student.user", "user")
+        .innerJoin("student.room", "room")
         .leftJoin("stdAsm.fileResources", "fileResource")
         .where("assignment.assignmentId = :assignmentId", { assignmentId: assignmentId })
+        .andWhere("room.roomStatus = :roomStatus", { roomStatus: RoomStatus.OPEN })
         .andWhere("user.userId = :userId", user)
         .select(["stdAsm", "fileResource"])
         .getOne();
@@ -453,5 +456,33 @@ export class StudentAssignmentService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async reportMyAssignment(user: User) {
+    try {
+      const stdAsms = await this.repository.createQueryBuilder("stdAsm")
+        .innerJoin("stdAsm.student", "student")
+        .innerJoin("student.user", "user")
+        .innerJoin("student.room", "room")
+        .innerJoin("stdAsm.assignment", "assignment","room.roomId = assignment.room.roomId")
+        .where("user.userId = :userId", { userId: user.userId })
+        .select([
+          "assignment.assignmentId", "assignment.assignmentName", "assignment.assignmentScore", "assignment.assignmentType",
+          "stdAsm.stdAsmScore", "stdAsm.stdAsmStatus"
+        ])
+        .getMany();
+
+      for (const stdAsm of stdAsms) {
+        if (stdAsm.assignment.assignmentType === AssignmentType.GROUP) {
+          if (stdAsm.stdAsmScore > 0) {
+            stdAsm.stdAsmStatus = stdAsmStatus.CHECKED;
+          }
+        }
+      }
+      return stdAsms;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+
   }
 }

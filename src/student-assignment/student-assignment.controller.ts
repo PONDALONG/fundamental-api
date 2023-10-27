@@ -102,4 +102,15 @@ export class StudentAssignmentController {
     return await this.service.find(stdAsmId);
   }
 
+  @UseGuards(AuthGuard)
+  @Get("report-my-assignment")
+  @HttpCode(HttpStatus.OK)
+  async reportMyAssignment(@Request() auth: any) {
+    try {
+      return await this.service.reportMyAssignment(auth.user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
 }

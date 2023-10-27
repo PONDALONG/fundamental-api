@@ -14,7 +14,7 @@ import { StudentService } from "../student/student.service";
 import { StudentAssignmentService } from "../student-assignment/student-assignment.service";
 import { CreateAssignment, UpdateAssignment } from "./dto/assignment.model";
 import { User } from "../user/entities/user.entity";
-import { FileResourceService } from "../file-resource/file-resource.service";
+import { RoomStatus } from "../room/dto/room.enum";
 
 @Injectable()
 export class AssignmentService {
@@ -25,8 +25,7 @@ export class AssignmentService {
     @InjectRepository(FileResource) private readonly fileResourceRepository: Repository<FileResource>,
     private dataSource: DataSource,
     private readonly studentRoomService: StudentService,
-    private readonly assignmentService: StudentAssignmentService,
-    private readonly fileResourceService: FileResourceService
+    private readonly assignmentService: StudentAssignmentService
   ) {
   }
 
@@ -275,6 +274,7 @@ export class AssignmentService {
         .innerJoin("student.user", "user")
         .innerJoin("assignment.studentAssignments", "stdAsm")
         .where("user.userId = :userId", user)
+        .andWhere("rm.roomStatus = :roomStatus", { roomStatus: RoomStatus.OPEN })
         .select([
           "assignment.assignmentId",
           "assignment.assignmentName",
@@ -319,5 +319,4 @@ export class AssignmentService {
   }
 
   /*------------------- SUB FUNCTION -------------------*/
-
 }
